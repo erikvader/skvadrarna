@@ -1,0 +1,9 @@
+--style=java #vart braces ska placeras
+--indent=spaces=4 #hur stor indentering
+--pad-oper #padda +*, osv
+--unpad-paren #ta bort padding från paranteser som är bredvid varandra
+--align-pointer=name #* ska vara på namnet, inte typen
+--align-reference=name #& ska vara p/ namnet, inte typen
+-j #lägg till braces på typ if-satser om de inte har några
+--break-after-logical #lägg || och && i slutet av linjen om linjen är för lång
+--lineend=linux
