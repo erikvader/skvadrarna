@@ -1,8 +1,7 @@
-export CC=gcc
-export CFLAGS=-g -Wall
-export DEPSFLAGS=-MM -MP
-# Library source file
-SRCDIR=src
+# Library source files
+export SRCDIR=src
+# Test source files
+TESTDIR=test
 # Complete binary files
 export OUTDIR=$(CURDIR)/out
 # .o files, mostly
@@ -10,12 +9,28 @@ export BUILDDIR=$(CURDIR)/intermediates
 # .d files (GCC dependency files)
 export DEPSDIR=$(BUILDDIR)/deps
 
+export CC=gcc
+export CFLAGS=-g -Wall
+export DEPSFLAGS=-MM -MP
+export LDFLAGS=-L $(OUTDIR) -lskvadrarna
+
 export LIBRARYNAME=libskvadrarna.a
+export TESTEXECNAME=skvardrarna_test
 
 .PHONY: test memtest dirs clean format
 
 $(OUTDIR)/$(LIBRARYNAME): dirs
 	@make -C $(SRCDIR) $@ --no-print-directory
+
+
+$(OUTDIR)/$(TESTEXECNAME): dirs $(OUTDIR)/$(LIBRARYNAME)
+	@make -C $(TESTDIR) $(OUTDIR)/$(TESTEXECNAME) --no-print-directory
+
+test: $(OUTDIR)/$(TESTEXECNAME)
+	$(OUTDIR)/$(TESTEXECNAME)
+
+memtest: $(OUTDIR)/$(TESTEXECNAME)
+	valgrind --leak-check=full $(OUTDIR)/$(TESTEXECNAME)
 
 dirs:
 	@mkdir -p $(OUTDIR) $(BUILDDIR) $(DEPSDIR)
