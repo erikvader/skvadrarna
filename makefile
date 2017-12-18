@@ -15,9 +15,11 @@ export DEPSFLAGS=-MM -MP
 export LDFLAGS=-L $(OUTDIR) -lskvadrarna
 
 export LIBRARYNAME=libskvadrarna.a
-export TESTEXECNAME=skvardrarna_test
+export TESTEXECNAME=skvadrarna_test
 
-.PHONY: test memtest dirs clean format
+.PHONY: all test memtest dirs clean format
+
+all: $(OUTDIR)/$(LIBRARYNAME)
 
 $(OUTDIR)/$(LIBRARYNAME): dirs
 	@make -C $(SRCDIR) $@ --no-print-directory
