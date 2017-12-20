@@ -27,24 +27,40 @@ typedef struct heap_header{
 // creates the metadata object
 // creates 3 different structs: heap_header, used_arr and free_pointers
 void hm_init(heap_t *heap,size_t size,bool unsafe_stack, float gc_threshold) {
-	heap_header_t *heapen = (heap_header_t *) calloc(1, heap_header);
-	heapen -> heap_start = heap;
-   	heapen -> heap_siz = size;
-	heapen -> chunk_siz = 2048;
-	heapen -> unsafe_stack = unsafe_stack;
-	heapen -> gc_threshhold = gc_threshhold; 	
-	//heapen -> used_arr;
-	//heapen -> free_pointers;
+	heap_header_t *heap = (heap_header_t *) calloc(1, heap_header);
+	heap -> heap_start = heap;
+   	heap -> heap_siz = size;
+	heap -> chunk_siz = 2048;
+	heap -> unsafe_stack = unsafe_stack;
+	heap -> gc_threshhold = gc_threshhold; 	
+	//heap -> used_arr;
+	//heap -> free_pointers;
 }
 
 
 
 // requests a place to store an object
 // moves a free pointer accordingly
-void *hm_get_free_space(heap_t *heap,size_t obj_siz);
+void *hm_get_free_space(heap_t *heap,size_t obj_siz) //TODO: Must work with mutiple objects in same chunk.
+{
+	void *free_space = heap;
+	size_t head_size = sizeof(heap_header);
+	free_space = heap + head_size; //Moves pointer to the start of the first chunk;
+	heap_header_t *head = (heap_header_t*) heap;
+	for (int i = 0; i < hm_get_amount_chunks(heap); i ++) 
+	{
+		if ((head -> free_pointers)[i] == free_space) 
+	  	{
+		  return free_space;
+		}
+	}
+	puts("No free space available\n");
+	return NULL;
+}
 
 // gets an adress to store an object in a specific chunk
-void *hm_alloc_spec_chunk(heap_t *heap, size_t obj_siz, chunk_t index);
+void *hm_alloc_spec_chunk(heap_t *heap, size_t obj_siz, chunk_t index)
+
 
 // check if gc is currently over threshold.
 bool hm_over_threshold(heap_t *heap);
