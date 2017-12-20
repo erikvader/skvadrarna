@@ -39,8 +39,6 @@ void hm_init(heap_t *heap,size_t size,bool unsafe_stack, float gc_threshold) {
 
 
 
-// requests a place to store an object
-// moves a free pointer accordingly
 void *hm_get_free_space(heap_t *heap,size_t obj_siz) //TODO: Must work with mutiple objects in same chunk.
 {
 	void *free_space = heap;
@@ -53,35 +51,58 @@ void *hm_get_free_space(heap_t *heap,size_t obj_siz) //TODO: Must work with muti
 	  	{
 		  return free_space;
 		}
+		free_space = free_space + (heap -> chunk_siz);
 	}
-	puts("No free space available\n");
+	puts("No free space available :(\n");
 	return NULL;
 }
 
-// gets an adress to store an object in a specific chunk
+
 void *hm_alloc_spec_chunk(heap_t *heap, size_t obj_siz, chunk_t index)
+{
+	void *free_space = heap;
+	size_t head_size = sizeof(heap_header);
+	free_space = heap + head_size; //Moves pointer to the start of the first chunk
+	heap_header_t *head = (heap_header_t*) heap;//So we're able to use header metadata
+	free_space = free_space + (head -> chunk_siz)*index;
+	if (free_space == (head -> free_pointers)[index - 1])
+	{
+	  return free_space;
+	}
+	puts("Chunk is not free :( \n");
+	return NULL;
+}
 
+bool hm_over_threshold(heap_t *heap)
+{
+	return true;		
+}
 
-// check if gc is currently over threshold.
-bool hm_over_threshold(heap_t *heap);
+size_t hm_size_available(heap_t *heap) //
+{
+	size_t free_space;
+	heap_header_t *head = (heap_header_t*) heap;
+	free_space = (head -> heap_siz) - hm_get_amount_chunks(heap) * (heap -> chunk_siz); //2048 should be replaced with size of object allocated
+   	return free_space;
+}	
 
-// gets size avaiable in the heap
-size_t hm_size_available(heap_t *heap);
-
-// gets the used amount of memory in the heap
 size_t hm_size_used(heap_t *heap);
+{
+	size_t used_space;
+	heap_header_t *head = (heap_header_t*) heap;
+	used_space = hm_get_amount_chunks(heap) * (heap -> chunk_siz);
+	return used_space;
+}
 
-// asks if a pointer is a pointer on the stack, and point to an object on it
 bool hm_pointer_exists(heap_t *heap, void *pointer);
 
-// gets the amounts of chunk we have in the heap
+	
+	
+
 int hm_get_amount_chunks(heap_t *heap);
 
-// gets the chunk a pointer is pointing to
 chunk_t hm_get_pointer_chunk(heap_t *heap, void *pointer);
 
-// resets a chunk back to 0, effectivly clearing it.
 void hm_reset_chunk(heap_t *heap, chunk_t index);
 
-// returns a bool for every chunk, true if it is in use, false otherwise.
 void hm_get_used_chunks(heap_t *heap, bool *data);
