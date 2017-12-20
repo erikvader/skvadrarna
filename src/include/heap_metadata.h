@@ -75,16 +75,21 @@ int hm_get_amount_chunks(heap_t *heap);
 /// \return if pointer points inside a chunk, gives that chunk, otherwise -1
 chunk_t hm_get_pointer_chunk(heap_t *heap, void *pointer);
 
-/// Marks all memory ina chunk as unoccupied, making it available
+/// Marks all memory in a chunk as unoccupied, making it available
 /// for future allocations.
+///
+/// \param heap the heap
+/// \param index the chunk to reset
 void hm_reset_chunk(heap_t *heap, chunk_t index);
 
 // returns a bool for every chunk, true if it is in use, false otherwise.
 /// Gives which chunks are used (have some occupied memory) and which are not.
-/// This data is written into data, which should be an array able to fit
+/// This information is written into data, which should be an array able to fit
 /// as many items as there are chunks in the heap, see \ref hm_get_amount_chunks
+///
+/// \param heap the heap
+/// \param data the array to write the data to
 void hm_get_used_chunks(heap_t *heap, bool *data);
-
 
 
 #endif
