@@ -9,16 +9,22 @@
 
 typedef int chunk_t;
 
-/// The size of a heap header
-const size_t heap_header_size;
-
-/// Initializes a header. The header is placed at the location pointed to by the heap parameter.
+/// Initializes metadata for a heap. The header is placed at the location pointed to by the heap parameter
+/// and this should be at the very start of the heap's memory.
 ///
-/// \param heap the heap for which to allocate a header
-/// \param size the size of the heap, should be a multiple of 2048
+/// \param heap the heap for which to initialize a header
+/// \param size the size of the heap, should be a multiple of 2048 (this is excluding the header size)
 /// \param unsafe_stack true if pointers on the stack to this heap are to be considered unsafe pointers
 /// \param gc_threshold the memory pressure at which gc should be triggered for this heap
 void hm_init(heap_t *heap, size_t size, bool unsafe_stack, float gc_threshold);
+
+/// Calculates the space required for the metadata of a heap of a certain size.
+/// E.g. for a heap of size 2^12, you'd need:
+/// 2^12 + hm_measure_required_space(2^12) bytes of memory.
+///
+/// \param heap_siz the desired heap size
+/// \return the header size needed for a heap of size heap_siz
+size_t hm_measure_required_space(size_t heap_siz);
 
 /// Reserves a space on the heap where obj_size bytes can be written.
 /// Marks that space as occupied.
