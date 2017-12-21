@@ -35,7 +35,7 @@ void hm_init(heap_t *heap, size_t size, bool unsafe_stack, float gc_threshold) {
     head -> chunk_siz = 2048;
     head -> unsafe_stack = unsafe_stack;
     head -> gc_threshold = gc_threshold;
-    head -> free_pointers = &(heap + sizeof(heap_header));
+    head -> free_pointers = &(heap + sizeof(heap_header_t));
 }
 
 size_t hm_measure_required_space(size_t heap_siz) {
@@ -73,9 +73,17 @@ void *hm_alloc_spec_chunk(heap_t *heap, size_t obj_siz, chunk_t index) {
 }
 
 bool hm_over_threshold(heap_t *heap) {
-  	  
-
-
+   	heap_header_t *head = (heap_header_t *) heap;	 
+	float used = (float *) hm_size_used(heap);
+	float total = (float *) (hm_get_amount_chunks(heap) * (head -> chunk_siz));
+	if((used/total) > (head -> gc_threshhold))
+	{
+	  	return true;
+	}
+	else
+	{
+	  	return false;
+	}
 }
 
 size_t hm_size_available(heap_t *heap) { //
