@@ -27,14 +27,13 @@ heap_header_size = sizeof(head_header_t);
 // creates the metadata object
 // creates 3 different structs: heap_header, used_arr and free_pointers
 void hm_init(heap_t *heap, size_t size, bool unsafe_stack, float gc_threshold) {
-    heap_header_t *heap = (heap_header_t *) calloc(1, heap_header);
-    heap -> heap_start = heap;
-    heap -> heap_siz = size;
-    heap -> chunk_siz = 2048;
-    heap -> unsafe_stack = unsafe_stack;
-    heap -> gc_threshhold = gc_threshhold;
-    //heap -> used_arr;
-    //heap -> free_pointers;
+    heap_header_t *head = (heap_header_t *) heap;
+    head -> heap_start = heap + sizeof(heap_header) + hm_get_amount_chunks(heap) * sizeof(void*);
+    head -> heap_siz = size;
+    head -> chunk_siz = 2048;
+    head -> unsafe_stack = unsafe_stack;
+    head -> gc_threshhold = gc_threshhold;
+    head -> free_pointers = &(heap + sizeof(heap_header));
 }
 
 
@@ -69,7 +68,9 @@ void *hm_alloc_spec_chunk(heap_t *heap, size_t obj_siz, chunk_t index) {
 }
 
 bool hm_over_threshold(heap_t *heap) {
-    return true;
+  	  
+
+
 }
 
 size_t hm_size_available(heap_t *heap) { //
@@ -87,7 +88,22 @@ size_t hm_size_used(heap_t *heap);
     return used_space;
 }
 
-bool hm_pointer_exists(heap_t *heap, void *pointer);
+bool hm_pointer_exists(heap_t *heap, void *pointer)
+{
+	heap_header_t *head = (heap_header_t *) heap;
+	size_t upper_limit = (head -> heap_siz) + hm_get_amount_chunks(heap) * (head -> chunk_siz);
+	size_t lower_limit = (head -> heap_start);
+	if (pointer <= upper_limit && pointer >= lower_limit)
+	{
+	  return true;
+	}
+	else
+	{
+	  return false;
+	}
+}
+
+
 
 int hm_get_amount_chunks(heap_t *heap) {
     assert(heap);
