@@ -12,9 +12,7 @@ typedef int chunk_t;
 /// The size of a heap header
 const size_t heap_header_size;
 
-/// Initializes a header. The heap parameter is used to determine where to create the header;
-/// the header is placed right in front of the heap pointer. This means that there
-/// should be some free space before heap at least as big as heap_header_size.
+/// Initializes a header. The header is placed at the location pointed to by the heap parameter.
 ///
 /// \param heap the heap for which to allocate a header
 /// \param size the size of the heap, should be a multiple of 2048
