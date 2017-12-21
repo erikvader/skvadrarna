@@ -30,12 +30,12 @@ typedef struct heap_header {
 // creates 3 different structs: heap_header, used_arr and free_pointers
 void hm_init(heap_t *heap, size_t size, bool unsafe_stack, float gc_threshold) {
     heap_header_t *head = (heap_header_t *) heap;
-    head -> heap_start = heap + hm_measure_required_space(size);
+    head -> heap_start = ((void *)heap) + hm_measure_required_space(size);
     head -> heap_siz = size;
     head -> chunk_siz = 2048;
     head -> unsafe_stack = unsafe_stack;
     head -> gc_threshold = gc_threshold;
-    head -> free_pointers = &(heap + sizeof(heap_header_t));
+    head -> free_pointers = &(((void *) heap) + sizeof(heap_header_t));
 }
 
 size_t hm_measure_required_space(size_t heap_siz) {
@@ -46,7 +46,7 @@ size_t hm_measure_required_space(size_t heap_siz) {
 void *hm_get_free_space(heap_t *heap, size_t obj_siz) { //TODO: Must work with mutiple objects in same chunk.
     void *free_space = heap;
     size_t head_size = sizeof(heap_header_t);
-    free_space = heap + head_size; //Moves pointer to the start of the first chunk;
+    free_space = ((void *)heap) + head_size; //Moves pointer to the start of the first chunk;
     heap_header_t *head = (heap_header_t *) heap;
     for(int i = 0; i < hm_get_amount_chunks(heap); i ++) {
         if((head -> free_pointers)[i] == free_space) {
@@ -62,7 +62,7 @@ void *hm_get_free_space(heap_t *heap, size_t obj_siz) { //TODO: Must work with m
 void *hm_alloc_spec_chunk(heap_t *heap, size_t obj_siz, chunk_t index) {
     void *free_space = heap;
     size_t head_size = sizeof(heap_header_t);
-    free_space = heap + head_size; //Moves pointer to the start of the first chunk
+    free_space = ((void *)heap) + head_size; //Moves pointer to the start of the first chunk
     heap_header_t *head = (heap_header_t *) heap; //So we're able to use header metadata
     free_space = free_space + (head -> chunk_siz) * index;
     if(free_space == (head -> free_pointers)[index - 1]) {
