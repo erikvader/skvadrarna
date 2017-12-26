@@ -43,7 +43,7 @@ size_t hm_measure_required_space(size_t heap_siz) {
     return sizeof(heap_header_t) + sizeof(void*) * n_chunks;
 }
 
-void *hm_get_free_space(heap_t *heap, size_t obj_siz) { //TODO: Must work with mutiple objects in same chunk.
+void *hm_reserve_space(heap_t *heap, size_t obj_siz) { //TODO: Must work with mutiple objects in same chunk.
     void *free_space = heap;
     size_t head_size = sizeof(heap_header_t);
     free_space = ((void *)heap) + head_size; //Moves pointer to the start of the first chunk;
@@ -65,7 +65,7 @@ void *hm_alloc_spec_chunk(heap_t *heap, size_t obj_siz, chunk_t index) {
     free_space = ((void *)heap) + head_size; //Moves pointer to the start of the first chunk
     heap_header_t *head = (heap_header_t *) heap; //So we're able to use header metadata
     free_space = free_space + (head -> chunk_siz) * index;
-    if(free_space == (head -> free_pointers)[index - 1]) {
+    if(free_space == (head -> free_pointers)[index]) {
         return free_space;
     }
     puts("Chunk is not free :( \n");
