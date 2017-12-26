@@ -141,6 +141,88 @@ void test_hm_under_threshold()
 
 
 
+
+void test_hm_size_available1()
+{
+  	size_t object = 0;
+	int n_chunks = 5;
+    size_t head_size = hm_measure_required_space(CHUNK_SIZE*n_chunks);
+    char metadata[head_size];
+	heap_t *test_heap = (heap_t *) metadata;
+    hm_init(test_heap, CHUNK_SIZE*n_chunks, false, 0.5);
+	hm_reserve_space(test_heap, object);
+	CU_ASSERT_EQUAL(hm_size_available(test_heap), 10240);
+}
+
+void test_hm_size_available2()
+{
+  	size_t object = 2048;
+	int n_chunks = 5;
+    size_t head_size = hm_measure_required_space(CHUNK_SIZE*n_chunks);
+    char metadata[head_size];
+	heap_t *test_heap = (heap_t *) metadata;
+    hm_init(test_heap, CHUNK_SIZE*n_chunks, false, 0.5);
+	hm_reserve_space(test_heap, object);
+	CU_ASSERT_EQUAL(hm_size_available(test_heap), 8192);
+}
+
+void test_hm_size_available3()
+{
+  	size_t object = 2048;
+	int n_chunks = 5;
+    size_t head_size = hm_measure_required_space(CHUNK_SIZE*n_chunks);
+    char metadata[head_size];
+	heap_t *test_heap = (heap_t *) metadata;
+    hm_init(test_heap, CHUNK_SIZE*n_chunks, false, 0.5);
+	hm_reserve_space(test_heap, object);
+	hm_reserve_space(test_heap, object);
+	hm_reserve_space(test_heap, object);
+	hm_reserve_space(test_heap, object);
+	hm_reserve_space(test_heap, object);
+	CU_ASSERT_EQUAL(hm_size_available(test_heap), 0);
+}
+
+void test_hm_size_used1()
+{
+  	size_t object = 0;
+	int n_chunks = 5;
+    size_t head_size = hm_measure_required_space(CHUNK_SIZE*n_chunks);
+    char metadata[head_size];
+	heap_t *test_heap = (heap_t *) metadata;
+    hm_init(test_heap, CHUNK_SIZE*n_chunks, false, 0.5);
+	hm_reserve_space(test_heap, object);
+	CU_ASSERT_EQUAL(hm_size_available(test_heap), 0);
+}
+
+void test_hm_size_used2()
+{
+  	size_t object = 2048;
+	int n_chunks = 5;
+    size_t head_size = hm_measure_required_space(CHUNK_SIZE*n_chunks);
+    char metadata[head_size];
+	heap_t *test_heap = (heap_t *) metadata;
+    hm_init(test_heap, CHUNK_SIZE*n_chunks, false, 0.5);
+	hm_reserve_space(test_heap, object);
+	CU_ASSERT_EQUAL(hm_size_used(test_heap), 2048);
+}
+
+void test_hm_size_used3()
+{
+  	size_t object = 2048;
+	int n_chunks = 5;
+    size_t head_size = hm_measure_required_space(CHUNK_SIZE*n_chunks);
+    char metadata[head_size];
+	heap_t *test_heap = (heap_t *) metadata;
+    hm_init(test_heap, CHUNK_SIZE*n_chunks, false, 0.5);
+	hm_reserve_space(test_heap, object);
+	hm_reserve_space(test_heap, object);
+	hm_reserve_space(test_heap, object);
+	hm_reserve_space(test_heap, object);
+	hm_reserve_space(test_heap, object);
+	CU_ASSERT_EQUAL(hm_size_used(test_heap), 10240);
+}
+
+
 void test_hm_measure_required_space() {
     // This is a bit difficult to test without making it too dependent
     // on implementation.
