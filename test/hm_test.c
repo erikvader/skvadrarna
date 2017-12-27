@@ -48,7 +48,7 @@ void test_reserve_space2()
     char metadata[head_size];
 	heap_t *test_heap = (heap_t *) metadata;
     hm_init(test_heap, CHUNK_SIZE*n_chunks, false, 1);
-	CU_ASSERT_EQUALS(hm_reserve_space(test_heap, empty_object), NULL);
+	CU_ASSERT_EQUAL(hm_reserve_space(test_heap, empty_object), NULL);
 }
 
 void test_reserve_space3()
@@ -60,7 +60,7 @@ void test_reserve_space3()
     char metadata[head_size];
 	heap_t *test_heap = (heap_t *) metadata;
     hm_init(test_heap, CHUNK_SIZE*n_chunks, false, 1);
-	CU_ASSERT_EQUALS(hm_reserve_space(test_heap, too_big_object), NULL);
+	CU_ASSERT_EQUAL(hm_reserve_space(test_heap, too_big_object), NULL);
 }
 
 
@@ -85,7 +85,7 @@ void test_alloc_spec_chunk2()
 	heap_t *test_heap = (heap_t *) metadata;
     hm_init(test_heap, CHUNK_SIZE*n_chunks, false, 1);
 	CU_ASSERT_TRUE(hm_alloc_spec_chunk(test_heap, object1, 3) != NULL);
-	CU_ASSERT_EQUALS(hm_alloc_spec_chunk(test_heap, object2, 3), NULL);
+	CU_ASSERT_EQUAL(hm_alloc_spec_chunk(test_heap, object2, 3), NULL);
 }
 
 void test_index_alloc_spec_chunk1()
@@ -221,6 +221,32 @@ void test_hm_size_used3()
 	hm_reserve_space(test_heap, object);
 	CU_ASSERT_EQUAL(hm_size_used(test_heap), 10240);
 }
+
+void test_hm_pointer_exists1()
+{
+    size_t object = 2048;
+	int n_chunks = 5;
+    size_t head_size = hm_measure_required_space(CHUNK_SIZE*n_chunks);
+    char metadata[head_size];
+	heap_t *test_heap = (heap_t *) metadata;
+    hm_init(test_heap, CHUNK_SIZE*n_chunks, false, 0.5);
+	void *test_pointer = hm_reserve_space(test_heap, object);
+	CU_ASSERT_TRUE(hm_pointer_exists(test_heap, test_pointer) == true);
+}
+
+
+void test_hm_pointer_exists2()
+{
+    size_t object = 2048;
+	int n_chunks = 5;
+    size_t head_size = hm_measure_required_space(CHUNK_SIZE*n_chunks);
+    char metadata[head_size];
+	heap_t *test_heap = (heap_t *) metadata;
+    hm_init(test_heap, CHUNK_SIZE*n_chunks, false, 0.5);
+	void *test_pointer = "banan rullar snabbtare än applena";
+	CU_ASSERT_TRUE(hm_pointer_exists(test_heap, test_pointer) == false);
+}
+	
 
 
 void test_hm_measure_required_space() {
