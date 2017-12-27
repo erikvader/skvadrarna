@@ -11,38 +11,38 @@
 //          gå till 2, men byt ut 'stacken' mot 'objektet'
 // 5: rensa alla chunks som användes innan samlingen (om de inte är unsafe)
 
-void explore(heap_t *heap, void* obj, bool unsafe, bool *unsafe_chunks){
-   
+void explore(heap_t *heap, void *obj, bool unsafe, bool *unsafe_chunks) {
+
 }
 
-void gce_run_gc_event(heap_t *heap){
+void gce_run_gc_event(heap_t *heap) {
 
-   int num_chunks = hm_get_amount_chunks(heap);
-   
-   bool unsafe = hm_is_unsafe(heap);
-   bool unsafe_chunks[num_chunks];
+    int num_chunks = hm_get_amount_chunks(heap);
 
-   //get locked chunks
-   bool locked[num_chunks];
-   hm_get_used_chunks(heap, locked);
+    bool unsafe = hm_is_unsafe(heap);
+    bool unsafe_chunks[num_chunks];
 
-   //loopa stack
-   void* start;
-   start = &start;
+    //get locked chunks
+    bool locked[num_chunks];
+    hm_get_used_chunks(heap, locked);
 
-   while(start != environ){
-      void **next = si_next_pointer(heap, &start);
-      if(*next != environ){
-         explore(heap, *next, unsafe, unsafe_chunks);
-      }
-   }
+    //loopa stack
+    void *start;
+    start = &start;
 
-   //free chunks
-   for(int i = 0; i < num_chunks; i++){
-      if(!unsafe_chunks[i] && locked[i]){
-         hm_reset_chunk(heap, i);
-      }
-   }
+    while(start != environ) {
+        void **next = si_next_pointer(heap, &start);
+        if(*next != environ) {
+            explore(heap, *next, unsafe, unsafe_chunks);
+        }
+    }
+
+    //free chunks
+    for(int i = 0; i < num_chunks; i++) {
+        if(!unsafe_chunks[i] && locked[i]) {
+            hm_reset_chunk(heap, i);
+        }
+    }
 
 }
 
