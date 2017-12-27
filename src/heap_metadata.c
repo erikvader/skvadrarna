@@ -49,16 +49,12 @@ size_t hm_measure_required_space(size_t heap_siz) {
 
 
 void *hm_reserve_space(heap_t *heap, size_t obj_siz) { //TODO: Must work with mutiple objects in same chunk.
-<<<<<<< HEAD
-    if (obj_siz == NULL) 
-	{
-	  	return void;
-	}
-	if (obj_siz > 2048)
-	{
-	  	return void;
-	}
-=======
+    if(obj_siz == 0) {
+        return NULL;
+    }
+    if(obj_siz > 2048) {
+        return NULL;
+    }
     heap_header_t *head = (heap_header_t *) heap;
     void *free_space = head->heap_start;
     for(int i = 0; i < hm_get_amount_chunks(heap); i ++) {
@@ -100,29 +96,27 @@ size_t hm_size_available(heap_t *heap) { //
     size_t free_space;
     heap_header_t *head = (heap_header_t *) heap;
 
-	void *tmp = heap;
+    void *tmp = heap;
     size_t head_size = sizeof(heap_header_t);
     tmp = ((void *)heap) + head_size; //Moves pointer to the start of the first chunk;
-	int i = 0;
-	int x = i;
-    for(i; i < hm_get_amount_chunks(heap); i ++) 
-	{
-	  	if((head -> free_pointers)[i] == tmp) 
-		{
-        	x = x + 1;  
+    int i = 0;
+    int x = i;
+    for(; i < hm_get_amount_chunks(heap); i ++) {
+        if((head -> free_pointers)[i] == tmp) {
+            x = x + 1;
         }
         tmp = tmp + (head -> chunk_siz);
     }
-    
-	
-	free_space = (head -> heap_siz) - x * (head -> chunk_siz); //2048 should be replaced with size of object allocated
+
+
+    free_space = (head -> heap_siz) - x * (head -> chunk_siz); //2048 should be replaced with size of object allocated
     return free_space;
 }
 
 size_t hm_size_used(heap_t *heap) {
     size_t used_space;
     heap_header_t *head = (heap_header_t *) heap;
-    used_space = (head -> heap_size) - hm_size_available(heap);
+    used_space = (head -> heap_siz) - hm_size_available(heap);
     return used_space;
 }
 
