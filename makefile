@@ -1,5 +1,5 @@
 # Library source files
-export SRCDIR=src
+export SRCDIR=$(CURDIR)/src
 # Test source files
 TESTDIR=test
 # Complete binary files
