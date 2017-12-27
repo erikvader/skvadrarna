@@ -47,23 +47,18 @@ size_t hm_measure_required_space(size_t heap_siz) {
     return sizeof(heap_header_t) + sizeof(void *) * n_chunks;
 }
 
+
 void *hm_reserve_space(heap_t *heap, size_t obj_siz) { //TODO: Must work with mutiple objects in same chunk.
 <<<<<<< HEAD
     if (obj_siz == NULL) 
 	{
-	  	puts("Can not allocate empty object");
 	  	return void;
 	}
 	if (obj_siz > 2048)
 	{
-	  	puts("object too large");
 	  	return void;
 	}
-  	void *free_space = heap;
-    size_t head_size = sizeof(heap_header_t);
-    free_space = ((void *)heap) + head_size; //Moves pointer to the start of the first chunk;
 =======
->>>>>>> 2ddf7116556aac45bfd12b4d3103b2eef31512bc
     heap_header_t *head = (heap_header_t *) heap;
     void *free_space = head->heap_start;
     for(int i = 0; i < hm_get_amount_chunks(heap); i ++) {
@@ -89,19 +84,6 @@ void *hm_alloc_spec_chunk(heap_t *heap, size_t obj_siz, chunk_t index) {
 }
 
 bool hm_over_threshold(heap_t *heap) {
-<<<<<<< HEAD
-   	heap_header_t *head = (heap_header_t *) heap;	 
-	float used = (float *) hm_size_used(heap);
-	float total = (float *) (hm_get_amount_chunks(heap) * (head -> chunk_siz));
-	if((used/total) >= (head -> gc_threshhold))
-	{
-	  	return true;
-	}
-	else
-	{
-	  	return false;
-	}
-=======
     heap_header_t *head = (heap_header_t *) heap;
     float used = (float) hm_size_used(heap);
     float total = (float)(hm_get_amount_chunks(heap) * (head -> chunk_siz));
@@ -110,7 +92,6 @@ bool hm_over_threshold(heap_t *heap) {
     } else {
         return false;
     }
->>>>>>> 2ddf7116556aac45bfd12b4d3103b2eef31512bc
 }
 
 
@@ -138,35 +119,13 @@ size_t hm_size_available(heap_t *heap) { //
     return free_space;
 }
 
-<<<<<<< HEAD
-
-size_t hm_size_used(heap_t *heap)
-{
-=======
 size_t hm_size_used(heap_t *heap) {
->>>>>>> 2ddf7116556aac45bfd12b4d3103b2eef31512bc
     size_t used_space;
     heap_header_t *head = (heap_header_t *) heap;
     used_space = (head -> heap_size) - hm_size_available(heap);
     return used_space;
 }
 
-<<<<<<< HEAD
-
-bool hm_pointer_exists(heap_t *heap, void *pointer)
-{
-	heap_header_t *head = (heap_header_t *) heap;
-	size_t upper_limit = (head -> heap_siz) + hm_get_amount_chunks(heap) * (head -> chunk_siz);
-	size_t lower_limit = (head -> heap_start);
-	if (pointer <= upper_limit && pointer >= lower_limit)
-	{
-	  return true;
-	}
-	else
-	{
-	  return false;
-	}
-=======
 bool hm_pointer_exists(heap_t *heap, void *pointer) {
     heap_header_t *head = (heap_header_t *) heap;
     void *upper_limit = (head -> heap_start) + (head -> heap_siz);
@@ -176,7 +135,6 @@ bool hm_pointer_exists(heap_t *heap, void *pointer) {
     } else {
         return false;
     }
->>>>>>> 2ddf7116556aac45bfd12b4d3103b2eef31512bc
 }
 
 
