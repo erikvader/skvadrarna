@@ -52,7 +52,7 @@ void test_reserve_space2() {
 
 void test_reserve_space3() {
     //Reserving space larger than Chunk_size.
-    size_t too_big_object = 2049;
+    size_t too_big_object = CHUNK_SIZE + 1;
     int n_chunks = 100;
     size_t head_size = hm_measure_required_space(CHUNK_SIZE * n_chunks);
     char metadata[head_size];
@@ -106,7 +106,7 @@ void test_index_alloc_spec_chunk2() {
 
 
 void test_hm_over_threshold() {
-    size_t chunk_object = 2048;
+    size_t chunk_object = CHUNK_SIZE;
     int n_chunks = 5;
     size_t head_size = hm_measure_required_space(CHUNK_SIZE * n_chunks);
     char metadata[head_size];
@@ -146,7 +146,7 @@ void test_hm_size_available1() {
 }
 
 void test_hm_size_available2() {
-    size_t object = 2048;
+    size_t object = CHUNK_SIZE;
     int n_chunks = 5;
     size_t head_size = hm_measure_required_space(CHUNK_SIZE * n_chunks);
     char metadata[head_size];
@@ -157,7 +157,7 @@ void test_hm_size_available2() {
 }
 
 void test_hm_size_available3() {
-    size_t object = 2048;
+    size_t object = CHUNK_SIZE;
     int n_chunks = 5;
     size_t head_size = hm_measure_required_space(CHUNK_SIZE * n_chunks);
     char metadata[head_size];
@@ -179,22 +179,22 @@ void test_hm_size_used1() {
     heap_t *test_heap = (heap_t *) metadata;
     hm_init(test_heap, CHUNK_SIZE * n_chunks, false, 0.5);
     hm_reserve_space(test_heap, object);
-    CU_ASSERT_EQUAL(hm_size_available(test_heap), 0);
+    CU_ASSERT_EQUAL(hm_size_used(test_heap), 0);
 }
 
 void test_hm_size_used2() {
-    size_t object = 2048;
+    size_t object = CHUNK_SIZE;
     int n_chunks = 5;
     size_t head_size = hm_measure_required_space(CHUNK_SIZE * n_chunks);
     char metadata[head_size];
     heap_t *test_heap = (heap_t *) metadata;
     hm_init(test_heap, CHUNK_SIZE * n_chunks, false, 0.5);
     hm_reserve_space(test_heap, object);
-    CU_ASSERT_EQUAL(hm_size_used(test_heap), 2048);
+    CU_ASSERT_EQUAL(hm_size_used(test_heap), CHUNK_SIZE);
 }
 
 void test_hm_size_used3() {
-    size_t object = 2048;
+    size_t object = CHUNK_SIZE;
     int n_chunks = 5;
     size_t head_size = hm_measure_required_space(CHUNK_SIZE * n_chunks);
     char metadata[head_size];
@@ -209,7 +209,7 @@ void test_hm_size_used3() {
 }
 
 void test_hm_pointer_exists1() {
-    size_t object = 2048;
+    size_t object = CHUNK_SIZE;
     int n_chunks = 5;
     size_t head_size = hm_measure_required_space(CHUNK_SIZE * n_chunks);
     char metadata[head_size];
@@ -221,7 +221,6 @@ void test_hm_pointer_exists1() {
 
 
 void test_hm_pointer_exists2() {
-    size_t object = 2048;
     int n_chunks = 5;
     size_t head_size = hm_measure_required_space(CHUNK_SIZE * n_chunks);
     char metadata[head_size];
@@ -232,7 +231,6 @@ void test_hm_pointer_exists2() {
 }
 
 void test_hm_pointer_exists3() {
-    size_t object = 2048;
     int n_chunks = 5;
     size_t head_size = hm_measure_required_space(CHUNK_SIZE * n_chunks);
     char metadata[head_size];
