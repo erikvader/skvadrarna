@@ -37,14 +37,14 @@ void hm_init(heap_t *heap, size_t size, bool unsafe_stack, float gc_threshold) {
     head -> gc_threshold = gc_threshold;
     head -> free_pointers = ((void *) heap) + sizeof(heap_header_t);
     int n_chunks = hm_get_amount_chunks(heap);
-    for (int i = 0; i < n_chunks; i++) {
+    for(int i = 0; i < n_chunks; i++) {
         head->free_pointers[i] = head->heap_start + i * head->chunk_siz;
     }
 }
 
 size_t hm_measure_required_space(size_t heap_siz) {
     int n_chunks = heap_siz / CHUNK_SIZE;
-    return sizeof(heap_header_t) + sizeof(void*) * n_chunks;
+    return sizeof(heap_header_t) + sizeof(void *) * n_chunks;
 }
 
 void *hm_reserve_space(heap_t *heap, size_t obj_siz) { //TODO: Must work with mutiple objects in same chunk.
@@ -73,17 +73,14 @@ void *hm_alloc_spec_chunk(heap_t *heap, size_t obj_siz, chunk_t index) {
 }
 
 bool hm_over_threshold(heap_t *heap) {
-   	heap_header_t *head = (heap_header_t *) heap;	 
-	float used = (float) hm_size_used(heap);
-	float total = (float) (hm_get_amount_chunks(heap) * (head -> chunk_siz));
-	if((used/total) > (head -> gc_threshold))
-	{
-	  	return true;
-	}
-	else
-	{
-	  	return false;
-	}
+    heap_header_t *head = (heap_header_t *) heap;
+    float used = (float) hm_size_used(heap);
+    float total = (float)(hm_get_amount_chunks(heap) * (head -> chunk_siz));
+    if((used / total) > (head -> gc_threshold)) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 size_t hm_size_available(heap_t *heap) { //
@@ -93,27 +90,22 @@ size_t hm_size_available(heap_t *heap) { //
     return free_space;
 }
 
-size_t hm_size_used(heap_t *heap)
-{
+size_t hm_size_used(heap_t *heap) {
     size_t used_space;
     heap_header_t *head = (heap_header_t *) heap;
     used_space = hm_get_amount_chunks(heap) * (head -> chunk_siz);
     return used_space;
 }
 
-bool hm_pointer_exists(heap_t *heap, void *pointer)
-{
-	heap_header_t *head = (heap_header_t *) heap;
-	void *upper_limit = (head -> heap_start) + (head -> heap_siz);
-	void *lower_limit = (head -> heap_start);
-	if (pointer <= upper_limit && pointer >= lower_limit)
-	{
-	  return true;
-	}
-	else
-	{
-	  return false;
-	}
+bool hm_pointer_exists(heap_t *heap, void *pointer) {
+    heap_header_t *head = (heap_header_t *) heap;
+    void *upper_limit = (head -> heap_start) + (head -> heap_siz);
+    void *lower_limit = (head -> heap_start);
+    if(pointer <= upper_limit && pointer >= lower_limit) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 
