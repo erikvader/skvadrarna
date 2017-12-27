@@ -246,7 +246,18 @@ void test_hm_pointer_exists2()
 	void *test_pointer = "banan rullar snabbtare än applena";
 	CU_ASSERT_TRUE(hm_pointer_exists(test_heap, test_pointer) == false);
 }
-	
+
+void test_hm_pointer_exists3()
+{
+ 	size_t object = 2048;
+	int n_chunks = 5;
+    size_t head_size = hm_measure_required_space(CHUNK_SIZE*n_chunks);
+    char metadata[head_size];
+	heap_t *test_heap = (heap_t *) metadata;
+    hm_init(test_heap, CHUNK_SIZE*n_chunks, false, 0.5);
+	void *test_pointer = NULL;
+	CU_ASSERT_TRUE(hm_pointer_exists(test_heap, test_pointer) == false);
+}	
 
 
 void test_hm_measure_required_space() {
