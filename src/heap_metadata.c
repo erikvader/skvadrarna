@@ -95,10 +95,7 @@ bool hm_over_threshold(heap_t *heap) {
 size_t hm_size_available(heap_t *heap) { //
     size_t free_space;
     heap_header_t *head = (heap_header_t *) heap;
-
-    void *tmp = heap;
-    size_t head_size = sizeof(heap_header_t);
-    tmp = ((void *)heap) + head_size; //Moves pointer to the start of the first chunk;
+    void *tmp = (head -> heap_start); //Moves pointer to the start of the first chunk;
     int i = 0;
     int x = i;
     for(; i < hm_get_amount_chunks(heap); i ++) {
