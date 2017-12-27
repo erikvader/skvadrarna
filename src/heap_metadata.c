@@ -44,7 +44,17 @@ size_t hm_measure_required_space(size_t heap_siz) {
 }
 
 void *hm_reserve_space(heap_t *heap, size_t obj_siz) { //TODO: Must work with mutiple objects in same chunk.
-    void *free_space = heap;
+    if (obj_siz == NULL) 
+	{
+	  	puts("Can not allocate empty object");
+	  	return void;
+	}
+	if (obj_siz > 2048)
+	{
+	  	puts("object too large");
+	  	return void;
+	}
+  	void *free_space = heap;
     size_t head_size = sizeof(heap_header_t);
     free_space = ((void *)heap) + head_size; //Moves pointer to the start of the first chunk;
     heap_header_t *head = (heap_header_t *) heap;
@@ -76,7 +86,7 @@ bool hm_over_threshold(heap_t *heap) {
    	heap_header_t *head = (heap_header_t *) heap;	 
 	float used = (float *) hm_size_used(heap);
 	float total = (float *) (hm_get_amount_chunks(heap) * (head -> chunk_siz));
-	if((used/total) > (head -> gc_threshhold))
+	if((used/total) >= (head -> gc_threshhold))
 	{
 	  	return true;
 	}
@@ -86,20 +96,40 @@ bool hm_over_threshold(heap_t *heap) {
 	}
 }
 
+
+
 size_t hm_size_available(heap_t *heap) { //
     size_t free_space;
     heap_header_t *head = (heap_header_t *) heap;
-    free_space = (head -> heap_siz) - hm_get_amount_chunks(heap) * (head -> chunk_siz); //2048 should be replaced with size of object allocated
+
+	void *tmp = heap;
+    size_t head_size = sizeof(heap_header_t);
+    tmp = ((void *)heap) + head_size; //Moves pointer to the start of the first chunk;
+	int i = 0;
+	int x = i;
+    for(i; i < hm_get_amount_chunks(heap); i ++) 
+	{
+	  	if((head -> free_pointers)[i] == tmp) 
+		{
+        	x = x + 1;  
+        }
+        tmp = tmp + (head -> chunk_siz);
+    }
+    
+	
+	free_space = (head -> heap_siz) - x * (head -> chunk_siz); //2048 should be replaced with size of object allocated
     return free_space;
 }
+
 
 size_t hm_size_used(heap_t *heap)
 {
     size_t used_space;
     heap_header_t *head = (heap_header_t *) heap;
-    used_space = hm_get_amount_chunks(heap) * (head -> chunk_siz);
+    used_space = (head -> heap_size) - hm_size_available(heap);
     return used_space;
 }
+
 
 bool hm_pointer_exists(heap_t *heap, void *pointer)
 {
