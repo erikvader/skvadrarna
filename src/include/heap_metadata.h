@@ -32,7 +32,7 @@ size_t hm_measure_required_space(size_t heap_siz);
 /// \param heap the heap for which to find the space
 /// \param obj_size the size of the space to reserve
 /// \return a pointer to the reserved space, or NULL if no such space was available
-void *hm_get_free_space(heap_t *heap, size_t obj_siz);
+void *hm_reserve_space(heap_t *heap, size_t obj_siz);
 
 /// Reserves a space in a specific chunk where obj_size bytes can be written.
 /// Marks that space as occupied.
