@@ -6,12 +6,15 @@
 
 // Unit tests for the heap metadata module
 
-void test_hm_init() 
-{
-
-
+void test_hm_init() {
+    size_t head_size = hm_measure_required_space(CHUNK_SIZE);
+    char metadata[head_size + 1];
+    memset(metadata, -1, head_size + 1);
+    hm_init((heap_t *) metadata, CHUNK_SIZE, false, 1);
+    CU_ASSERT_TRUE(metadata[0] != -1);
+    CU_ASSERT_TRUE(metadata[head_size - 1] != -1);
+    CU_ASSERT_TRUE(metadata[head_size] == -1);
 }
-
 
 void test_hm_get_amount_chunks() {
     int n_samples = 100;
@@ -278,6 +281,7 @@ void test_hm_get_pointer_chunk() {
     int n_chunks = 100;
     size_t head_size = hm_measure_required_space(CHUNK_SIZE*n_chunks);
     char metadata[head_size];
+
     hm_init((heap_t *) metadata, CHUNK_SIZE*n_chunks, false, 1);
     void *chunk_pointer = metadata;
     CU_ASSERT_EQUAL(hm_get_pointer_chunk((heap_t *) metadata, chunk_pointer), -1);
@@ -291,9 +295,53 @@ void test_hm_get_pointer_chunk() {
     CU_ASSERT_EQUAL(hm_get_pointer_chunk((heap_t *) metadata, chunk_pointer), -1);
 }
 
+void test_hm_reset_chunk() {
+    int n_chunks = 100;
+    size_t head_size = hm_measure_required_space(CHUNK_SIZE*n_chunks);
+    char metadata[head_size];
+    hm_init((heap_t *) metadata, CHUNK_SIZE*n_chunks, false, 1);
+
+    for (int n = 0; n < n_chunks; n++) {
+        hm_get_free_space((heap_t*)metadata, CHUNK_SIZE); //alloc all available space
+    }
+
+    for (int n = 0; n < n_chunks; n++) {
+        void *allocd = hm_get_free_space((heap_t *) metadata, 1);
+        CU_ASSERT_TRUE(allocd == NULL);
+        hm_reset_chunk((heap_t *) metadata, n);
+        allocd = hm_get_free_space((heap_t *) metadata, CHUNK_SIZE);
+        chunk_t chunk = hm_get_pointer_chunk((heap_t *) metadata, allocd);
+        CU_ASSERT_TRUE(chunk == n);
+    }
+}
+
+void test_hm_get_used_chunks() {
+    const int n_chunks = 8;
+    size_t head_size = hm_measure_required_space(CHUNK_SIZE*n_chunks);
+    char metadata[head_size];
+
+    hm_init((heap_t *) metadata, CHUNK_SIZE*n_chunks, false, 1);
+    bool expected[8] = {true, true, true, false, false, true, false, true};
+    for (int i = 0; i < n_chunks; i++) {
+        if (expected[i]) {
+            hm_alloc_spec_chunk((heap_t *) metadata, 1, i);
+        }
+    }
+
+    bool actual[n_chunks];
+    hm_get_used_chunks((heap_t *) metadata, actual);
+    for (int i = 0; i < n_chunks; i++) {
+        CU_ASSERT_EQUAL(expected[i], actual[i]);
+    }
+
+}
+
 void add_hm_test_suites() {
     CU_pSuite pSuite = CU_add_suite("", NULL, NULL);
     CU_ADD_TEST(pSuite, test_hm_measure_required_space);
+    CU_ADD_TEST(pSuite, test_hm_init);
     CU_ADD_TEST(pSuite, test_hm_get_amount_chunks);
     CU_ADD_TEST(pSuite, test_hm_get_pointer_chunk);
+    CU_ADD_TEST(pSuite, test_hm_reset_chunk);
+    CU_ADD_TEST(pSuite, test_hm_get_used_chunks);
 }
