@@ -8,42 +8,60 @@
 #define OBJECT_MIN_SIZ 16
 #define object_size_valid(X) (X<=(CHUNK_SIZ-HEADER_SIZ)&&X>=OBJECT_MIN_SIZ)
 
+#define HEADER (object - HEADER_SIZ)
+
+#define IS_FORWARDING (read_2_bits_last(object , 0)==1)
+#define SET_FORWARDING {write_2_bits_last(object, 0, 1);}
+#define IS_BIT_ARRAY (read_2_bits_last(object , 0)==3 && read_2_bits_last(object , 2)==0)
+#define SET_BIT_ARRAY {\
+    write_2_bits_last(object, 0, 3);\
+    write_2_bits_last(object, 2, 0);\
+      }
+#define IS_SIZE (read_2_bits_last(object , 0)==3 && read_2_bits_last(object , 2)==1)
+#define SET_SIZE {\
+    write_2_bits_last(object, 0, 3);\
+    write_2_bits_last(object, 2, 1);\
+  }
+#define IS_FORMAT_STRING (read_2_bits_last(object , 0)==0)
+#define SET_FORMAT_STRING {write_2_bits_last(object, 0, 0);}
 
 //-----------------------------------------HELPFUNCTIONS---------------------------
 
-//Reads from (first + offset) 2 bits of header data
+///Reads from (first + offset) 2 bits of header data
 uint8_t read_2_bits_first(const void *object, const int offset){
-  uint64_t data = *(uint64_t*)(object - HEADER_SIZ); // Data is a safe copy of header
+  uint64_t data = *(uint64_t*)(HEADER); // Data is a safe copy of header
   data = data >> (62 - offset);// 62 = bitsize of uint64_t - number of bits needed
   data = data & (uint64_t) 3;// Sets all but last 2 bits of data to 0;
   return data;  
 }
-//Reads from (last - offset) 2 bits of header data
+///Reads from (last - offset) 2 bits of header data
 uint8_t read_2_bits_last(const void *object,const int offset){
   return read_2_bits_first(object,HEADER_SIZ*8 -(2+ offset));
 }
 
-//Writes to (first + offset) 2 bits of header data
+///Writes to (first + offset) 2 bits of header data
 void write_2_bits_first(void *object, const int offset, uint64_t data){
-  uint64_t* header_data = (uint64_t *)(object - HEADER_SIZ); // header_data is the header 
+  uint64_t* header_data = (uint64_t *)(HEADER); // header_data is the header 
   data = data & (uint64_t) 3; // Sets all but last 2 bits of data to 0;
   data = data << (62 - offset); // 62 = bitsize of uint64_t - number of bits needed
   *header_data -= *header_data & ((uint64_t) 3 << (62-offset)); // sets bites to write to to 0;
   *header_data = *header_data | data; // writes to bits  
 }
-//Writes to (last - offset) 2 bits of header data
+
+///Writes to (last - offset) 2 bits of header data
 void write_2_bits_last(void *object, const int offset, uint64_t data){
   write_2_bits_first(object, HEADER_SIZ*8-(2+offset), data);
 }
 
 
-// #magic function to make everything else easier
-// Writes bitrepresentation of or calculate the size of a format string.
-//
-// |param object place where the object is stored
-// |param format format string to calculate size of and maybe write as bit array in the up to first 62 (including null termination) bits.
-// |param write If it should write or just calculate size.
-// |returns size, unless if write is true and write failed due to not enough space. Then it returns 0.
+/// Magic function to make everything else easier
+/// Writes bitrepresentation of or calculate the size of a format string.
+///
+/// \param object place where the object is stored
+/// \param format format string to calculate size of and maybe write as bit array in the up to first 62 (including null termination) bits.
+/// \param write If it should write or just calculate size.
+/// \returns Size, unless if write is true and write failed due to not enough space. Then it returns 0.
+
 size_t bit_array64(void *object, const char *format, bool write)
 {
   size_t size = 0;
@@ -155,7 +173,7 @@ size_t bit_array64(void *object, const char *format, bool write)
     return 0;
   }
 
-  // writes bit array to header, possible to make faster by writing all at same time.
+  /// writes bit array to header, possible to make faster by writing all at same time.
   for (int i = 0; i < bit_array_index; ++i) {
     write_2_bits_first(object , i*2,bit_array[i]);    
   }
@@ -166,65 +184,65 @@ size_t bit_array64(void *object, const char *format, bool write)
   
 }
 
-// ------------------------SECTION ABOUT BUILDING OM-------------------
-
-// builds a metadata object at where the pointer header is pointing
-//
-// \param object place where the object is stored
-// \param size the size of the object to be stored.
+/// ------------------------SECTION ABOUT BUILDING OM-------------------
+///
+/// builds a metadata object at where the pointer header is pointing
+///
+/// \param object place where the object is stored
+/// \param size the size of the object to be stored.
 void om_build_pointerless(void *object, const size_t size){
   assert(object != NULL);
   assert(object_size_valid(size));//Object is bigger then a chunk - header
   memset(object-HEADER_SIZ,'\0',HEADER_SIZ);//Sets header to 0
-  uint64_t* header_data  = object - HEADER_SIZ;// header_data is the header
+  uint64_t* header_data  = HEADER;// header_data is the header
   *header_data = ((uint64_t)size) << 4; //Stores size 4 bits from end
-  write_2_bits_last(object, 0 ,3 );
-  write_2_bits_last(object, 2 ,1 );
+  SET_SIZE
 }
 
-// builds a metadata given a format string.
-//
-// |param heap Adress to the heap metadata.
-// |param object Adress to the object, metadata will be stored in the HEADER_SIZ bytes before the object.
-// |param format Format string describing the object according to specification in assignment.
+/// builds a metadata given a format string.
+///
+/// \param heap Adress to the heap metadata.
+/// \param object Adress to the object, metadata will be stored in the HEADER_SIZ bytes before the object.
+/// \param format Format string describing the object according to specification in assignment.
 
-void om_build(heap_t* heap, void* object, const char* format){
+bool om_build(heap_t* heap, void* object, const char* format){
   assert(object != NULL && format != NULL);
   assert(sizeof(int)==4&& sizeof(void*)==8);//needs to be exstended to work for 32 bit
   if(strchr(format,'*')== NULL){
     om_build_pointerless(object,om_size_format(format));
-    return;
+    return true;
   }
   if(bit_array64(object, format, true)==0){// to big, make another object.
     size_t size = strlen(format)+1;
-    char* format_object = hm_get_free_space(heap,size);
+    /*char* format_object = hm_get_free_space(heap,size);
+    if (!format_object){ return false;}
     strcpy(format_object,format);
-    *(char **)(object -HEADER_SIZ) = format_object; 
+    *(char **)HEADER = format_object; 
     om_build_pointerless(format_object, size);
-    return;
+    return true;*/
   }
-  write_2_bits_last(object, 0, 3);
-  return;
+  SET_BIT_ARRAY
+  return true;
 }
 
-//---------------------SECTION ABOUT SIZE ------------------
+///---------------------SECTION ABOUT SIZE ------------------
 
-// returns the size of the object
-//
-// |param object Adress to an object
-// |returns size of the object
+/// returns the size of the object
+///
+/// \param object Adress to an object
+/// \returns size of the object
 
 size_t om_size(const void *object){
   assert(object != NULL);
   if(om_has_forwarding(object)){
     return om_size(om_get_forwarding(object));
   }
-  else if(read_2_bits_last(object, 0)==0){
-    char ** format_pointer = (char **)(object-HEADER_SIZ);
+  else if(IS_FORMAT_STRING){
+    char ** format_pointer = (char **)(HEADER);
     char * format =  *format_pointer;
     om_size_format(format);
   }
-  if(read_2_bits_last(object, 2)==0){
+  else if(IS_BIT_ARRAY){
     int offset =0;
     size_t size = 0;
     int data;
@@ -247,14 +265,17 @@ size_t om_size(const void *object){
     }while(data !=0);
     return size;
   }
-  uint64_t * data = (uint64_t*) (object - HEADER_SIZ);
-  return (uint16_t) (*data >> 4);//reads size 4 bits from end
+  else if(IS_SIZE){
+    uint64_t * data = (uint64_t*) (HEADER);
+    return (uint16_t) (*data >> 4);//reads size 4 bits from end
+  }
+  return 0;
 }
 
-// returns the size of a format string
-//
-// |param format char* specified in the assignment description.
-// |returns size of the format char*
+/// returns the size of a format string
+///
+/// \param format char* specified in the assignment description.
+/// \returns size of the format char*
 
 size_t om_size_format(const char *format){
   return bit_array64(NULL, format, false);
@@ -263,17 +284,16 @@ size_t om_size_format(const char *format){
 
 //--------------------SECTION ABOUT POINTERS----------------------
 
-// Returns the amount of pointers stored in the object.
-// Help for building arrays of pointers on the Stack.
-//
-// |param object Object with unknown number of pointers inside it.
-// |returns Number of pointers inside the object.
+/// Returns the amount of pointers stored in the object.
+/// Help for building arrays of pointers on the Stack.
+///
+/// \param object Object with unknown number of pointers inside it.
+/// \returns Number of pointers inside the object.
 
 int om_amount_pointers(const void *object){
   assert(object != NULL);
-  uint16_t last_2 = read_2_bits_last(object, 0);
-  if(last_2 == 0){
-    const char* format = *(char**)(object - HEADER_SIZ);
+  if(IS_FORMAT_STRING){
+    const char* format = *(char**)HEADER;
     int amount =0;
     
     do{
@@ -283,7 +303,7 @@ int om_amount_pointers(const void *object){
       ++format;
     }while(*format);
     return amount;
-  }else if(last_2 == 3){
+  }else if(IS_BIT_ARRAY){
     
     int offset = 0;
     uint16_t bits_2 = read_2_bits_first(object, offset);
@@ -305,17 +325,16 @@ int om_amount_pointers(const void *object){
   return 0;
 }
 
-// Gets pointers to the suppoused pointers in the object according to the format string when the object header was builded.
-// Some of them might be NULL or CORRUPTED
-//
-// |param object Object to get pointers from.
-// |param pointers Array to store the pointers to pointer in. Get size of array in om_amount_pointers.
+/// Gets pointers to the suppoused pointers in the object according to the format string when the object header was builded.
+/// Some of them might be NULL or CORRUPTED
+///
+/// \param object Object to get pointers from.
+/// \param pointers Array to store the pointers to pointer in. Get size of array in om_amount_pointers.
 
 void om_get_pointers(const void *object, void ***pointers){
   assert(object != NULL && pointers != NULL);
-   uint16_t last_2 = read_2_bits_last(object, 0);
-  if(last_2 == 0){
-    const char* format = *(char**)(object - HEADER_SIZ);
+  if(IS_FORMAT_STRING){
+    const char* format = *(char**)(HEADER);
     int bytes_before_pointer =0;
     int index = 0;
     size_t size = om_size_format(format);
@@ -333,7 +352,7 @@ void om_get_pointers(const void *object, void ***pointers){
       
       format = strchr(format,'*');// Jumps to next *      
     }
-  }else if(last_2 == 3){
+  }else if(IS_BIT_ARRAY){
     
     int offset = 0;
     uint16_t bits_2 = read_2_bits_first(object, offset);
@@ -366,40 +385,41 @@ void om_get_pointers(const void *object, void ***pointers){
   
 }
 
-// --------------------SECTION ABOUT FORWARDING--------------------------
+/// --------------------SECTION ABOUT FORWARDING--------------------------
 
-// returns true when object has been moved, otherwise false
-//
-// |param object The Object
-// |return If the object has been moved.
+/// returns true when object has been moved, otherwise false
+///
+/// \param object The Object
+/// \return If the object has been moved.
+
 bool om_has_forwarding(const void *object){
   assert(object != NULL);
-  return (read_2_bits_last(object,0)==1);
+  return (IS_FORWARDING);
 }
 
-// Void for setting header to forwarding mode (when moving during GC- event)
-// Doesn't move the object, just sets the header to redirect everything to new place.
-//
-// |param object Object to set forwarding
-// |param adress New home
+/// Void for setting header to forwarding mode (when moving during GC- event)
+/// Doesn't move the object, just sets the header to redirect everything to new place.
+///
+/// \param object Object to set forwarding
+/// \param adress New home
 
 void om_set_forwarding(void *object, const void *adress){
   assert(adress != NULL && object != NULL);
-  const void** header = (object - HEADER_SIZ);
+  const void** header = (HEADER);
   *header = adress;
   write_2_bits_last(object, 0, 1);
 }
 
-// gets the forwarding adress if the header is in forwarding mode.
-//
-// |object The object that might have a forwarding adress.
-// |returns The forwarding adress if it has one, else NULL.
+/// gets the forwarding adress if the header is in forwarding mode.
+///
+/// \object The object that might have a forwarding adress.
+/// \returns The forwarding adress if it has one, else NULL.
 
 void *om_get_forwarding(const void *object){
   assert(object != NULL);
   if(om_has_forwarding(object)){
     uint16_t last_2 = read_2_bits_last(object, 0);
-    return (*(void**)(object - HEADER_SIZ)- last_2);
+    return (*(void**)HEADER- last_2);
   }else{
     return NULL;
   }

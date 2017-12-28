@@ -11,6 +11,8 @@ static char* format;
 static void* object;
 static size_t true_size;
 static uint64_t data;
+static int no_pointers;
+static int * pointers;
 /* The suite initialization function.
  * Opens the temporary file used by the tests.
  * Returns zero on success, non-zero otherwise.
@@ -62,15 +64,22 @@ bool test_data(void){
   }
 }
 
-void test_pointers(void){
+bool test_pointers(void){
   int amount_pointers = om_amount_pointers(object);
   void** pointerarray[amount_pointers];
   om_get_pointers(object,pointerarray);
-  printf("Format_string: %s \n",format);
-  printf("Amount_pointers: %d \n", amount_pointers);
-  for (int i = 0; i < amount_pointers; ++i) {
-    printf("Pointer %d: %"PRIu64"\n",(i+1), *(uint64_t *)pointerarray[i]);
+  bool returnvalue = true;
+  if(amount_pointers!=no_pointers){
+    printf("Amount_pointers: %d expected %d\n", amount_pointers, no_pointers);
   }
+  
+  for (int i = 0; i < amount_pointers; ++i) {
+    if((*(uint64_t *)pointerarray[i]) != pointers[i]){
+      printf("Pointer %d: %"PRIu64" expecterd: %d\n",(i+1), *(uint64_t *)pointerarray[i], pointers[i]);
+    }
+  }
+    
+  return returnvalue;
 
 }
 
@@ -108,14 +117,21 @@ int main(void)
 {
 
 
-  FILE* fp = fopen("om_size_and_build_tests.txt", "r");
+  FILE* fp = fopen("om_testdata.txt", "r");
   true_size =0;
   data = 0;
+  no_pointers = 0;
   int testnr =1;
   while(!feof(fp)){
     char buf[512];
-    fscanf(fp, "%s %"PRIu64" %"PRIu64"\n", buf, &true_size, &data);
+    fscanf(fp, "%s %"PRIu64" %"PRIu64" %d", buf, &true_size, &data, &no_pointers);
     format = buf;
+    int pointer_array[no_pointers];
+    pointers = pointer_array;
+    for (int i = 0; i < no_pointers; ++i) {
+      fscanf(fp, "%d", &(pointers[i]));
+    }
+    fscanf(fp, "\n"); 
     init();
     bool sizetest = test_size();
     bool datatest = test_data();
@@ -126,7 +142,13 @@ int main(void)
     else{
       printf("Sizetest och datatest %d: FEL!\n", testnr);
     }
-    test_pointers();
+    
+    if(test_pointers()){
+      printf("Pointertest %d: OK!\n", testnr);
+      
+    }else{
+      printf("Pointertest %d: FEL!\n", testnr);
+    }
     if(test_redirect()){
       printf("Redirecttest %d: OK!\n", testnr);
     }else{
