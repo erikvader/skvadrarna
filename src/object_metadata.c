@@ -214,12 +214,12 @@ bool om_build(heap_t* heap, void* object, const char* format){
   }
   if(bit_array64(object, format, true)==0){// to big, make another object.
     size_t size = strlen(format)+1;
-    /*char* format_object = hm_get_free_space(heap,size);
+    char* format_object = hm_get_free_space(heap,size);
     if (!format_object){ return false;}
     strcpy(format_object,format);
     *(char **)HEADER = format_object; 
     om_build_pointerless(format_object, size);
-    return true;*/
+    return true;
   }
   SET_BIT_ARRAY
   return true;
@@ -240,7 +240,7 @@ size_t om_size(const void *object){
   else if(IS_FORMAT_STRING){
     char ** format_pointer = (char **)(HEADER);
     char * format =  *format_pointer;
-    om_size_format(format);
+    return om_size_format(format);
   }
   else if(IS_BIT_ARRAY){
     int offset =0;
