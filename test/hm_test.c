@@ -34,7 +34,8 @@ void test_reserve_space() {
     char metadata[head_size];
     heap_t *test_heap = (heap_t *) metadata;
     hm_init(test_heap, CHUNK_SIZE * n_chunks, false, 1);
-    while(hm_reserve_space(test_heap, test_size)) {
+    for(int i = 0; i < n_chunks; i++) {
+        CU_ASSERT_TRUE(hm_reserve_space(test_heap, test_size) != NULL);
     }
     CU_ASSERT_EQUAL(hm_reserve_space(test_heap, test_size), NULL);
 }
@@ -69,39 +70,26 @@ void test_alloc_spec_chunk1() {
     char metadata[head_size];
     heap_t *test_heap = (heap_t *) metadata;
     hm_init(test_heap, CHUNK_SIZE * n_chunks, false, 1);
-    CU_ASSERT_TRUE(hm_alloc_spec_chunk(test_heap, object, 3) != NULL);
+    bool banned_chunks[n_chunks];
+    memset(banned_chunks, true, n_chunks);
+    CU_ASSERT_TRUE(hm_alloc_spec_chunk(test_heap, object, banned_chunks) == NULL);
 }
 
 void test_alloc_spec_chunk2() {
-    size_t object1 = 100;
-    size_t object2 = 1949;
-    int n_chunks = 100;
+    int n_chunks = 8;
     size_t head_size = hm_measure_required_space(CHUNK_SIZE * n_chunks);
     char metadata[head_size];
-    heap_t *test_heap = (heap_t *) metadata;
-    hm_init(test_heap, CHUNK_SIZE * n_chunks, false, 1);
-    CU_ASSERT_TRUE(hm_alloc_spec_chunk(test_heap, object1, 3) != NULL);
-    CU_ASSERT_EQUAL(hm_alloc_spec_chunk(test_heap, object2, 3), NULL);
-}
 
-void test_index_alloc_spec_chunk1() {
-    size_t object = 100;
-    int n_chunks = 100;
-    size_t head_size = hm_measure_required_space(CHUNK_SIZE * n_chunks);
-    char metadata[head_size];
     heap_t *test_heap = (heap_t *) metadata;
     hm_init(test_heap, CHUNK_SIZE * n_chunks, false, 1);
-    CU_ASSERT_TRUE(hm_alloc_spec_chunk(test_heap, object, 0) != NULL);
-}
-
-void test_index_alloc_spec_chunk2() {
-    size_t object = 100;
-    int n_chunks = 100;
-    size_t head_size = hm_measure_required_space(CHUNK_SIZE * n_chunks);
-    char metadata[head_size];
-    heap_t *test_heap = (heap_t *) metadata;
-    hm_init(test_heap, CHUNK_SIZE * n_chunks, false, 1);
-    CU_ASSERT_TRUE(hm_alloc_spec_chunk(test_heap, object, 101) == NULL);
+    bool banned_chunks[8] = {true, true, true, false, false, true, false, true};
+    for (int i = 0; i < 3; i++) {
+        void *allocated = hm_alloc_spec_chunk(test_heap, CHUNK_SIZE, banned_chunks);
+        CU_ASSERT_TRUE(allocated != NULL);
+        chunk_t chunk = hm_get_pointer_chunk(test_heap, allocated);
+        CU_ASSERT_TRUE(chunk == 3 || chunk == 4 || chunk == 6);
+    }
+    CU_ASSERT_TRUE(hm_alloc_spec_chunk(test_heap, 1, banned_chunks) == NULL);
 }
 
 
@@ -299,17 +287,15 @@ void test_hm_get_used_chunks() {
     char metadata[head_size];
 
     hm_init((heap_t *) metadata, CHUNK_SIZE * n_chunks, false, 1);
-    bool expected[8] = {true, true, true, false, false, true, false, true};
+    bool banned[8] = {true, true, true, false, false, true, false, true};
     for(int i = 0; i < n_chunks; i++) {
-        if(expected[i]) {
-            hm_alloc_spec_chunk((heap_t *) metadata, 1, i);
-        }
+        hm_alloc_spec_chunk((heap_t *) metadata, CHUNK_SIZE, banned);
     }
 
-    bool actual[n_chunks];
-    hm_get_used_chunks((heap_t *) metadata, actual);
+    bool used[n_chunks];
+    hm_get_used_chunks((heap_t *) metadata, used);
     for(int i = 0; i < n_chunks; i++) {
-        CU_ASSERT_EQUAL(expected[i], actual[i]);
+        CU_ASSERT_EQUAL(!banned[i], used[i]);
     }
 
 }
@@ -326,8 +312,6 @@ void add_hm_test_suites() {
     CU_ADD_TEST(allocSuite, test_reserve_space3);
     CU_ADD_TEST(allocSuite, test_alloc_spec_chunk1);
     CU_ADD_TEST(allocSuite, test_alloc_spec_chunk2);
-    CU_ADD_TEST(allocSuite, test_index_alloc_spec_chunk1);
-    CU_ADD_TEST(allocSuite, test_index_alloc_spec_chunk2);
 
     CU_pSuite gettersSuite = CU_add_suite("Heap metadata getters and query functions", NULL, NULL);
     CU_ADD_TEST(gettersSuite, test_hm_get_amount_chunks);

@@ -34,14 +34,15 @@ size_t hm_measure_required_space(size_t heap_siz);
 /// \return a pointer to the reserved space, or NULL if no such space was available
 void *hm_reserve_space(heap_t *heap, size_t obj_siz);
 
-/// Reserves a space in a specific chunk where obj_size bytes can be written.
+/// Reserves a space on the heap where obj_size bytes can be written,
+/// but allows to specify a set of chunks in which the space should not be reserved.
 /// Marks that space as occupied.
 ///
 /// \param heap the heap for which to find the space
 /// \param obj_size the size of the space to reserve
-/// \param index the chunk to reserve the memory in
+/// \param ban array of one bool per chunk where true=>don't use, false=>can use
 /// \return a pointer to the reserved space, or NULL if no such space was available
-void *hm_alloc_spec_chunk(heap_t *heap, size_t obj_siz, chunk_t index);
+void *hm_alloc_spec_chunk(heap_t *heap, size_t obj_siz, bool *ban);
 
 /// Checks if the percentage of allocated memory is above the threshold for garbage collection.
 ///
@@ -86,10 +87,11 @@ chunk_t hm_get_pointer_chunk(heap_t *heap, void *pointer);
 /// \param index the chunk to reset
 void hm_reset_chunk(heap_t *heap, chunk_t index);
 
-// returns a bool for every chunk, true if it is in use, false otherwise.
 /// Gives which chunks are used (have some occupied memory) and which are not.
 /// This information is written into data, which should be an array able to fit
-/// as many items as there are chunks in the heap, see \ref hm_get_amount_chunks
+/// as many items as there are chunks in the heap, see \ref hm_get_amount_chunks.
+/// E.g. data[4]==true means chunk 4 is in use, while data[3]==false means chunk 3
+/// is completely empty.
 ///
 /// \param heap the heap
 /// \param data the array to write the data to

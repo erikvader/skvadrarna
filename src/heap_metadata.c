@@ -49,32 +49,27 @@ size_t hm_measure_required_space(size_t heap_siz) {
 
 
 void *hm_reserve_space(heap_t *heap, size_t obj_siz) { //TODO: Must work with mutiple objects in same chunk.
+    int n_chunks = hm_get_amount_chunks(heap);
+    bool banned_chunks[n_chunks];
+    memset(banned_chunks, false, n_chunks);
+    return hm_alloc_spec_chunk(heap, obj_siz, banned_chunks);
+}
+
+void *hm_alloc_spec_chunk(heap_t *heap, size_t obj_siz, bool *ban) {
     if(obj_siz == 0) {
         return NULL;
     }
-    if(obj_siz > 2048) {
+    if(obj_siz > CHUNK_SIZE) {
         return NULL;
     }
-    heap_header_t *head = (heap_header_t *) heap;
+    heap_header_t *head = (heap_header_t *) heap; //So we're able to use header metadata
     void *free_space = head->heap_start;
-    for(int i = 0; i < hm_get_amount_chunks(heap); i ++) {
-        if((head -> free_pointers)[i] == free_space) {
+    for (int i = 0; i < hm_get_amount_chunks(heap); i++) {
+        if(free_space == (head -> free_pointers)[i] && !ban[i]) {
             head->free_pointers[i] += obj_siz;
             return free_space;
         }
-        free_space = free_space + (head -> chunk_siz);
-    }
-    return NULL;
-}
-
-
-void *hm_alloc_spec_chunk(heap_t *heap, size_t obj_siz, chunk_t index) {
-    heap_header_t *head = (heap_header_t *) heap; //So we're able to use header metadata
-    void *free_space = head->heap_start;
-    free_space = free_space + (head -> chunk_siz) * index;
-    if(free_space == (head -> free_pointers)[index]) {
-        head->free_pointers[index] += obj_siz;
-        return free_space;
+        free_space += head->chunk_siz;
     }
     return NULL;
 }
