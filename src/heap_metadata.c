@@ -99,13 +99,11 @@ size_t hm_size_available(heap_t *heap) { //
     int i = 0;
     int x = i;
     for(; i < hm_get_amount_chunks(heap); i ++) {
-        if((head -> free_pointers)[i] == tmp) {
+        if((head -> free_pointers)[i] != tmp) {
             x = x + 1;
         }
         tmp = tmp + (head -> chunk_siz);
     }
-
-
     free_space = (head -> heap_siz) - x * (head -> chunk_siz); //2048 should be replaced with size of object allocated
     return free_space;
 }
@@ -127,6 +125,13 @@ bool hm_pointer_exists(heap_t *heap, void *pointer) {
         return false;
     }
 }
+
+bool hm_is_unsafe(heap_t *heap)
+{
+  	heap_header_t *head = (heap_header_t *) heap;
+	return (heap -> unsafe_stack);
+}
+
 
 
 
