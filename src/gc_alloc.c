@@ -6,6 +6,10 @@ void *gca_alloc_struct(heap_t *heap, char *format)
     size_t bytes = om_get_size(format);
     
     void* heap_pointer = hm_get_free_space(heap, bytes);
+
+    if (heap_pointer == NULL) {
+      return NULL;
+    }
     
     om_build(heap_pointer, format);
     
@@ -16,8 +20,14 @@ void *gca_alloc_struct(heap_t *heap, char *format)
 void *gca_alloc_data(heap_t *heap, size_t bytes) {
     
     void* heap_pointer = hm_get_free_space(heap, bytes);
+
+    if (heap_pointer == NULL) {
+      return NULL;
+    }
     
     om_build_pointerless(heap_pointer, bytes);
+
+    return heap_pointer;
 }
 
 /*
