@@ -1,21 +1,7 @@
 #include "include/heap_metadata.h"
 #include "include/object_metadata.h"
 
-void *gca_alloc_struct(heap_t *heap, char *format)
-{
-    size_t bytes = om_get_size(format);
-    
-    void* heap_pointer = hm_get_free_space(heap, bytes);
-
-    if (heap_pointer == NULL) {
-      return NULL;
-    }
-    
-    om_build(heap_pointer, format);
-    
-    return heap_pointer;
-    
-}
+char *gca_str_copy(heap_t *heap, char *string);
 
 void *gca_alloc_data(heap_t *heap, size_t bytes) {
     
@@ -28,6 +14,26 @@ void *gca_alloc_data(heap_t *heap, size_t bytes) {
     om_build_pointerless(heap_pointer, bytes);
 
     return heap_pointer;
+}
+
+void *gca_alloc_struct(heap_t *heap, char *format)
+{
+    size_t bytes = om_get_size(format);
+
+    char *new_format = gca_alloc_data(heap, bytes);
+
+    new_format = gca_str_copy(heap, new_format); 
+    
+    void* heap_pointer = hm_get_free_space(heap, bytes);
+
+    if (heap_pointer == NULL) {
+      return NULL;
+    }
+    
+    om_build(heap_pointer, format);
+    
+    return heap_pointer;
+    
 }
 
 /*
