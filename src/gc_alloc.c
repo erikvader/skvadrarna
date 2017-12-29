@@ -1,4 +1,5 @@
-
+#include "include/heap_metadata.h"
+#include "include/object_metadata.h"
 
 void *gca_alloc_struct(heap_t *heap, char *format)
 {
@@ -6,7 +7,7 @@ void *gca_alloc_struct(heap_t *heap, char *format)
     
     void* heap_pointer = hm_get_free_space(heap, bytes);
     
-    om_build(heap_pointer, char *format);
+    om_build(heap_pointer, format);
     
     return heap_pointer;
     
