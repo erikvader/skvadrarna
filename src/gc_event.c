@@ -7,13 +7,12 @@
 // copy all live objects
 void explore(heap_t *heap, void **obj, bool *unsafe_chunks, bool *locked) {
 
-    int cur_chunk = hm_get_pointer_chunk(heap, *obj);
-
     if(om_has_forwarding(*obj)) {
         *obj = om_get_forwarding(*obj);
 
     } else if(!om_is_explored(*obj)) {
         om_set_explored(*obj);
+        int cur_chunk = hm_get_pointer_chunk(heap, *obj);
 
         if(!unsafe_chunks[cur_chunk]) {
             void *copy = hm_alloc_spec_chunk(heap, om_size(*obj), locked);
