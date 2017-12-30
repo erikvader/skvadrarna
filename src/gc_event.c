@@ -18,7 +18,7 @@ void explore(heap_t *heap, void **obj, bool *unsafe_chunks, bool *locked) {
         if(!unsafe_chunks[cur_chunk]) {
             void *copy = hm_alloc_spec_chunk(heap, om_size(*obj), locked);
             //TODO: if(fail) ???
-            memcpy(copy, *obj, om_size(*obj)); //TODO: inkludera headerns storlek
+            om_copy(copy, *obj); //dest, src
             om_set_forwarding(*obj, copy);
             *obj = copy;
         }
