@@ -4,12 +4,28 @@
 #include "include/object_metadata.h"
 #include <string.h>
 
+// extracts the last two bits of a pointer
+static
+char get_last_two(void **p) {
+    char last = (unsigned long)(*p) & 0b11;
+    *p = (void *)((unsigned long)(*p) & (~0b11));
+    return last;
+}
+
+// restores the last two bits of a previously extracted pointer
+static
+void restore_last_two(void **p, char last) {
+    *p = (void *)((unsigned long)(*p) | last);
+}
+
 // copy all live objects
 static
 void explore(heap_t *heap, void **obj, bool *unsafe_chunks, bool *locked) {
+    char backup = get_last_two(obj);
 
     if(om_has_forwarding(*obj)) {
         *obj = om_get_forwarding(*obj);
+        restore_last_two(obj, backup);
 
     } else if(!om_is_explored(*obj)) {
         om_set_explored(*obj);
@@ -22,6 +38,8 @@ void explore(heap_t *heap, void **obj, bool *unsafe_chunks, bool *locked) {
             om_set_forwarding(*obj, copy);
             *obj = copy;
         }
+
+        restore_last_two(obj, backup);
 
         //loop all pointers
         int pointer_num = om_amount_pointers(*obj);
