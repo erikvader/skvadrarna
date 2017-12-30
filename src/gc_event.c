@@ -22,8 +22,13 @@ void explore(heap_t *heap, void **obj, bool *unsafe_chunks, bool *locked) {
             *obj = copy;
         }
 
-        //TODO: gå igenom alla pointers
-
+        //loop all pointers
+        int pointer_num = om_amount_pointers(*obj);
+        void **pointers[pointer_num];
+        om_get_pointers(*obj, pointers);
+        for(int i = 0; i < pointer_num; i++) {
+            explore(heap, pointers[i], unsafe_chunks, locked);
+        }
     }
 }
 
