@@ -5,6 +5,7 @@
 #include <string.h>
 
 // copy all live objects
+static
 void explore(heap_t *heap, void **obj, bool *unsafe_chunks, bool *locked) {
 
     if(om_has_forwarding(*obj)) {
@@ -33,6 +34,7 @@ void explore(heap_t *heap, void **obj, bool *unsafe_chunks, bool *locked) {
 }
 
 // find all unsafe chunks
+static
 void mark(heap_t *heap, bool *unsafe_chunks, void **start) {
 
     while(*start != environ) {
@@ -44,6 +46,7 @@ void mark(heap_t *heap, bool *unsafe_chunks, void **start) {
     }
 }
 
+static
 void init_variable_sized_array(bool *arr, int arr_size, bool init) {
     for(int i = 0; i < arr_size; i++) {
         arr[i] = init;
