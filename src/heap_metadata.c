@@ -52,6 +52,13 @@ size_t hm_measure_required_space(size_t heap_siz) {
 /*
  * Allocation/deallocation functions
  */
+size_t chunk_get_free_space(heap_t *heap, chunk_t chunk) {
+    heap_header_t *header = (heap_header_t *) heap;
+    void *chunk_start = header->heap_start + header->chunk_siz * chunk;
+    size_t used_space = header->free_pointers[chunk] - chunk_start;
+    return header->chunk_siz - used_space;
+}
+
 void *hm_reserve_space(heap_t *heap, size_t obj_siz) { //TODO: Must work with mutiple objects in same chunk.
     int n_chunks = hm_get_amount_chunks(heap);
     bool banned_chunks[n_chunks];
@@ -69,9 +76,10 @@ void *hm_alloc_spec_chunk(heap_t *heap, size_t obj_siz, bool *ban) {
     heap_header_t *head = (heap_header_t *) heap; //So we're able to use header metadata
     void *free_space = head->heap_start;
     for (int i = 0; i < hm_get_amount_chunks(heap); i++) {
-        if(free_space == (head -> free_pointers)[i] && !ban[i]) {
+        if(chunk_get_free_space(heap, i) >= obj_siz && !ban[i]) {
+            void *allocated = head->free_pointers[i];
             head->free_pointers[i] += obj_siz;
-            return free_space;
+            return allocated;
         }
         free_space += head->chunk_siz;
     }
@@ -101,18 +109,10 @@ bool hm_over_threshold(heap_t *heap) {
 }
 
 size_t hm_size_available(heap_t *heap) { //
-    size_t free_space;
-    heap_header_t *head = (heap_header_t *) heap;
-    void *tmp = (head -> heap_start); //Moves pointer to the start of the first chunk;
-    int i = 0;
-    int x = i;
-    for(; i < hm_get_amount_chunks(heap); i ++) {
-        if((head -> free_pointers)[i] != tmp) {
-            x = x + 1;
-        }
-        tmp = tmp + (head -> chunk_siz);
+    size_t free_space = 0;
+    for(int i = 0; i < hm_get_amount_chunks(heap); i ++) {
+        free_space += chunk_get_free_space(heap, i);
     }
-    free_space = (head -> heap_siz) - x * (head -> chunk_siz); //2048 should be replaced with size of object allocated
     return free_space;
 }
 
@@ -125,12 +125,9 @@ size_t hm_size_used(heap_t *heap) {
 
 void hm_get_used_chunks(heap_t *heap, bool *data) {
     assert(heap && data);
-    heap_header_t *header = (heap_header_t *) heap;
     int n_chunks = hm_get_amount_chunks(heap);
-    void *chunk_start = header->heap_start;
     for(int i = 0; i < n_chunks; i++) {
-        data[i] = header->free_pointers[i] != chunk_start;
-        chunk_start += header->chunk_siz;
+        data[i] = chunk_get_free_space(heap, i) < CHUNK_SIZE;
     }
 }
 

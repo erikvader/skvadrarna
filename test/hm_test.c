@@ -29,12 +29,12 @@ void test_hm_get_amount_chunks() {
 void test_reserve_space() {
     //Allocates all heap space.
     int n_chunks = 100;
-    size_t test_size = 50;
+    size_t test_size = CHUNK_SIZE / 4;
     size_t head_size = hm_measure_required_space(CHUNK_SIZE * n_chunks);
     char metadata[head_size];
     heap_t *test_heap = (heap_t *) metadata;
     hm_init(test_heap, CHUNK_SIZE * n_chunks, false, 1);
-    for(int i = 0; i < n_chunks; i++) {
+    for(int i = 0; i < 4 * n_chunks; i++) {
         CU_ASSERT_TRUE(hm_reserve_space(test_heap, test_size) != NULL);
     }
     CU_ASSERT_EQUAL(hm_reserve_space(test_heap, test_size), NULL);
@@ -182,7 +182,7 @@ void test_hm_size_used2() {
 }
 
 void test_hm_size_used3() {
-    size_t object = CHUNK_SIZE;
+    size_t object = CHUNK_SIZE - 1;
     int n_chunks = 5;
     size_t head_size = hm_measure_required_space(CHUNK_SIZE * n_chunks);
     char metadata[head_size];
@@ -193,7 +193,7 @@ void test_hm_size_used3() {
     hm_reserve_space(test_heap, object);
     hm_reserve_space(test_heap, object);
     hm_reserve_space(test_heap, object);
-    CU_ASSERT_EQUAL(hm_size_used(test_heap), 10240);
+    CU_ASSERT_EQUAL(hm_size_used(test_heap), object * 5);
 }
 
 void test_hm_pointer_exists1() {
