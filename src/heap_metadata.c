@@ -26,8 +26,9 @@ typedef struct heap_header {
 } heap_header_t;
 
 
-// creates the metadata object
-// creates 3 different structs: heap_header, used_arr and free_pointers
+/*
+ * Initialization functions
+ */
 void hm_init(heap_t *heap, size_t size, bool unsafe_stack, float gc_threshold) {
     heap_header_t *head = (heap_header_t *) heap;
     head -> heap_start = ((void *)heap) + hm_measure_required_space(size);
@@ -48,6 +49,9 @@ size_t hm_measure_required_space(size_t heap_siz) {
 }
 
 
+/*
+ * Allocation/deallocation functions
+ */
 void *hm_reserve_space(heap_t *heap, size_t obj_siz) { //TODO: Must work with mutiple objects in same chunk.
     int n_chunks = hm_get_amount_chunks(heap);
     bool banned_chunks[n_chunks];
@@ -74,6 +78,17 @@ void *hm_alloc_spec_chunk(heap_t *heap, size_t obj_siz, bool *ban) {
     return NULL;
 }
 
+void hm_reset_chunk(heap_t *heap, chunk_t index) {
+    assert(heap && index >= 0 && index < hm_get_amount_chunks(heap));
+    heap_header_t *header = (heap_header_t *) heap;
+    void *chunk_start = header->heap_start + header->chunk_siz * index;
+    header->free_pointers[index] = chunk_start;
+}
+
+
+/*
+ * Memory availability/pressure functions
+ */
 bool hm_over_threshold(heap_t *heap) {
     heap_header_t *head = (heap_header_t *) heap;
     float used = (float) hm_size_used(heap);
@@ -84,8 +99,6 @@ bool hm_over_threshold(heap_t *heap) {
         return false;
     }
 }
-
-
 
 size_t hm_size_available(heap_t *heap) { //
     size_t free_space;
@@ -110,25 +123,25 @@ size_t hm_size_used(heap_t *heap) {
     return used_space;
 }
 
-bool hm_pointer_exists(heap_t *heap, void *pointer) {
-    heap_header_t *head = (heap_header_t *) heap;
-    void *upper_limit = (head -> heap_start) + (head -> heap_siz);
-    void *lower_limit = (head -> heap_start);
-    if(pointer <= upper_limit && pointer >= lower_limit) {
-        return true;
-    } else {
-        return false;
+void hm_get_used_chunks(heap_t *heap, bool *data) {
+    assert(heap && data);
+    heap_header_t *header = (heap_header_t *) heap;
+    int n_chunks = hm_get_amount_chunks(heap);
+    void *chunk_start = header->heap_start;
+    for(int i = 0; i < n_chunks; i++) {
+        data[i] = header->free_pointers[i] != chunk_start;
+        chunk_start += header->chunk_siz;
     }
 }
 
+/*
+ * Other getters & info functions
+ */
 bool hm_is_unsafe(heap_t *heap)
 {
     heap_header_t *head = (heap_header_t *) heap;
     return (head -> unsafe_stack);
 }
-
-
-
 
 int hm_get_amount_chunks(heap_t *heap) {
     assert(heap);
@@ -152,20 +165,13 @@ chunk_t hm_get_pointer_chunk(heap_t *heap, void *pointer) {
     return -1;
 }
 
-void hm_reset_chunk(heap_t *heap, chunk_t index) {
-    assert(heap && index >= 0 && index < hm_get_amount_chunks(heap));
-    heap_header_t *header = (heap_header_t *) heap;
-    void *chunk_start = header->heap_start + header->chunk_siz * index;
-    header->free_pointers[index] = chunk_start;
-}
-
-void hm_get_used_chunks(heap_t *heap, bool *data) {
-    assert(heap && data);
-    heap_header_t *header = (heap_header_t *) heap;
-    int n_chunks = hm_get_amount_chunks(heap);
-    void *chunk_start = header->heap_start;
-    for(int i = 0; i < n_chunks; i++) {
-        data[i] = header->free_pointers[i] != chunk_start;
-        chunk_start += header->chunk_siz;
+bool hm_pointer_exists(heap_t *heap, void *pointer) {
+    heap_header_t *head = (heap_header_t *) heap;
+    void *upper_limit = (head -> heap_start) + (head -> heap_siz);
+    void *lower_limit = (head -> heap_start);
+    if(pointer <= upper_limit && pointer >= lower_limit) {
+        return true;
+    } else {
+        return false;
     }
 }
