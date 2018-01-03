@@ -51,6 +51,20 @@ void *hm_alloc_spec_chunk(heap_t *heap, size_t obj_siz, bool *ban);
 /// \param return true if the memory pressure is above the threshold
 bool hm_over_threshold(heap_t *heap);
 
+///Provides the current value of the explored_bit in heap header.
+///
+///\param heap the heap to check
+///\param return the value of the explored_bit in heaps header
+bool hm_get_explored_bit(heap_t *heap);
+
+
+
+///Changes the value of explored_bit to !explored_bit
+///
+///\param heap the heap to check
+void hm_toggle_explored_bit(heap_t *heap);
+
+
 /// Gets the total available space in a heap
 ///
 /// \param heap the heap
