@@ -23,6 +23,8 @@ typedef struct heap_header {
     bitarr_t *used_arr;
     // arr of pointers fore where the free space begins in every chunk
     void **free_pointers;
+	
+	bool exploration_bit;
 } heap_header_t;
 
 
@@ -36,6 +38,7 @@ void hm_init(heap_t *heap, size_t size, bool unsafe_stack, float gc_threshold) {
     head -> unsafe_stack = unsafe_stack;
     head -> gc_threshold = gc_threshold;
     head -> free_pointers = ((void *) heap) + sizeof(heap_header_t);
+	head -> exploration_bit = true;
     int n_chunks = hm_get_amount_chunks(heap);
     for(int i = 0; i < n_chunks; i++) {
         head->free_pointers[i] = head->heap_start + i * head->chunk_siz;
@@ -132,7 +135,19 @@ bool hm_is_unsafe(heap_t *heap)
 	return (heap -> unsafe_stack);
 }
 
+bool hm_get_explored_bit(heap_t *heap) 
+{
+  	heap_header_t *head = (heap_header_t *) heap;
+  	return (head -> exploration_bit);
+}
 
+
+
+void hm_toggle_explored_bit(heap_t *heap)
+{
+	heap_header_t *head = (heap_header_t *) heap;
+	head -> exploration_bit = !(head -> exploration_bit);
+}	
 
 
 int hm_get_amount_chunks(heap_t *heap) {
