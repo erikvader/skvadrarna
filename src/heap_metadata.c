@@ -18,14 +18,16 @@ typedef struct heap_header {
     size_t chunk_siz;
     // if the stack is safe or not
     bool unsafe_stack;
+	
+	//bit for checking whether objects are explored or not.
+	bool exploration_bit;	
+	
     // the threashold for when a gc_event should trigger
     float gc_threshold;
     // the bit_array for which space is used
     bitarr_t *used_arr;
     // arr of pointers fore where the free space begins in every chunk
     void **free_pointers;
-	
-	bool exploration_bit;
 } heap_header_t;
 
 
@@ -112,6 +114,19 @@ void hm_reset_chunk(heap_t *heap, chunk_t index) {
     header->free_pointers[index] = chunk_start;
 }
 
+
+bool hm_get_explored_bit(heap_t *heap)
+{
+   	heap_header_t *header = (heap_header_t *) heap;
+	return (head -> exploration_bit);
+}
+
+
+void hm_toggle_explored_bit(heap_t *heap)
+{
+ 	heap_header_t *header = (heap_header_t *) heap;
+	head -> exploration_bit = !(head -> exploration_bit);
+}
 
 /*
  * Memory availability/pressure functions
