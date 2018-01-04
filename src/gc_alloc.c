@@ -21,7 +21,7 @@ void *gca_alloc_data(heap_t *heap, size_t bytes) {
 
 void *gca_alloc_struct(heap_t *heap, char *format)
 {
-    size_t bytes = om_size(format); //får storleken på strukten som format visar på
+    size_t bytes = om_size_format(format); //får storleken på strukten som format visar på
     
     /* 
      * Denna del görs även i om_build.
