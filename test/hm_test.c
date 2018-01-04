@@ -3,7 +3,7 @@
 #include "hm_test.h"
 
 #define CHUNK_SIZE 2048
-#define ALIGNMENT 4
+#define ALIGNMENT 16
 // Maximum possible padding due to alignment, used to ensure a minimum heap size is reached.
 // E.g. a heap given CHUNK_SIZE + ALIGNMENT_PADDING size will always be able to hold one chunk.
 #define ALIGNMENT_PADDING (ALIGNMENT - 1)
@@ -182,6 +182,8 @@ void test_hm_pointer_exists1() {
     HEAP_INIT(n_chunks, 1);
     void *test_pointer = hm_reserve_space(heap, object);
     CU_ASSERT_TRUE(hm_pointer_exists(heap, test_pointer) == true);
+    CU_ASSERT_TRUE(hm_pointer_exists(heap, test_pointer - 1) == false);
+    CU_ASSERT_TRUE(hm_pointer_exists(heap, test_pointer + 1) == false);
 }
 
 
@@ -229,22 +231,36 @@ void test_hm_get_pointer_chunk() {
     CU_ASSERT_EQUAL(hm_get_pointer_chunk(heap, chunk_pointer), -1);
 }
 
-void test_hm_reset_chunk() {
+void test_hm_reset_chunk1() {
     int n_chunks = 100;
     HEAP_INIT(n_chunks, 1);
 
     for(int n = 0; n < n_chunks; n++) {
-        hm_reserve_space((heap_t *)metadata, CHUNK_SIZE); //alloc all available space
+        hm_reserve_space(heap, CHUNK_SIZE); //alloc all available space
     }
 
     for(int n = 0; n < n_chunks; n++) {
         void *allocd = hm_reserve_space(heap, 1);
         CU_ASSERT_TRUE(allocd == NULL);
-        hm_reset_chunk((heap_t *) metadata, n);
+        hm_reset_chunk(heap, n);
         allocd = hm_reserve_space(heap, CHUNK_SIZE);
         chunk_t chunk = hm_get_pointer_chunk(heap, allocd);
         CU_ASSERT_TRUE(chunk == n);
     }
+}
+
+void test_hm_reset_chunk2() {
+    // Tests resetting of allocation map
+    HEAP_INIT(1, 1);
+    size_t obj1 = 153;
+    size_t obj2 = 2;
+    void *alloc1 = hm_reserve_space(heap, obj1);
+    void *alloc2 = hm_reserve_space(heap, obj2);
+    CU_ASSERT_TRUE(hm_pointer_exists(heap, alloc1));
+    CU_ASSERT_TRUE(hm_pointer_exists(heap, alloc2));
+    hm_reset_chunk(heap, 0);
+    CU_ASSERT_FALSE(hm_pointer_exists(heap, alloc1));
+    CU_ASSERT_FALSE(hm_pointer_exists(heap, alloc2));
 }
 
 void test_hm_get_used_chunks() {
@@ -270,7 +286,8 @@ void add_hm_test_suites() {
     CU_ADD_TEST(initSuite, test_hm_init);
 
     CU_pSuite allocSuite = CU_add_suite("Heap metadata allocation", NULL, NULL);
-    CU_ADD_TEST(allocSuite, test_hm_reset_chunk);
+    CU_ADD_TEST(allocSuite, test_hm_reset_chunk1);
+    CU_ADD_TEST(allocSuite, test_hm_reset_chunk2);
     CU_ADD_TEST(allocSuite, test_reserve_space);
     CU_ADD_TEST(allocSuite, test_reserve_space2);
     CU_ADD_TEST(allocSuite, test_reserve_space3);
