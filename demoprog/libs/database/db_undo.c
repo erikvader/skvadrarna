@@ -16,8 +16,8 @@ void undo_free_action(undo_action_t *undo_a){
    free(undo_a);
 }
 
-undo_stack_t* undo_stack_new(){
-   return stack_new(NULL, (element_free_fun) undo_free_action);
+undo_stack_t* undo_stack_new(heap_t *heap){
+  return stack_new(heap, NULL, (element_free_fun) undo_free_action);
 }
 
 // allocates a new undo_action.

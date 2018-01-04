@@ -46,7 +46,7 @@ bool db_item_exists(const database_t *db, const char *item){
    return tree_has_key(db->tree, key_char_to_elem_t(item));
 }
 
-enum db_error db_add_item(database_t *db, const char *name, const char *description, const int price){
+enum db_error db_add_item(heap_t *heap, database_t *db, const char *name, const char *description, const int price){
    if(!db_valid_item_name(name)){
       return DB_INVALID_ITEM_NAME;
    }
@@ -57,7 +57,7 @@ enum db_error db_add_item(database_t *db, const char *name, const char *descript
       return DB_ITEM_ALREADY_EXISTS;
    }
 
-   item_t *new = make_item(strdup(name), strdup(description), price);
+   item_t *new = make_item(heap, strdup(name), strdup(description), price);
    tree_insert(db->tree, key_char_to_elem_t(new->name), item_to_elem_t(new));
 
    if(db->undo_enabled) undo_stack_add(db->undo, new);
@@ -192,13 +192,13 @@ bool db_is_valid_shelf_name(const char *name){
    return has_c && has_num;
 }
 
-bool get_shelf(const database_t *db, const char *shelf_name, item_t **item, shelf_t **shelf){
+bool get_shelf(heap_t *heap, const database_t *db, const char *shelf_name, item_t **item, shelf_t **shelf){
    elem_t *elements = tree_elements(db->tree);
    int size = tree_size(db->tree);
    bool success = false;
    for(int i = 0; i < size; i++){
       item_t *cur = elements[i].p;
-      list_iterator_t *ite = list_get_iterator(cur->shelves);
+      list_iterator_t *ite = list_get_iterator(heap, cur->shelves);
       while(list_iterator_has_next(ite)){
          shelf_t *she = (*list_iterator_next(ite)).p;
          if(strcmp(she->name, shelf_name) == 0){
@@ -215,7 +215,7 @@ bool get_shelf(const database_t *db, const char *shelf_name, item_t **item, shel
    return success;
 }
 
-enum db_error db_put_item_on_shelf(database_t *db, const char *item, const char *shelf_name, const int amount){
+enum db_error db_put_item_on_shelf(heap_t *heap, database_t *db, const char *item, const char *shelf_name, const int amount){
    if(!db_is_valid_shelf_name(shelf_name)){
       return DB_INVALID_SHELF_NAME;
    }
@@ -228,7 +228,7 @@ enum db_error db_put_item_on_shelf(database_t *db, const char *item, const char 
 
    item_t *user;
    shelf_t *shelf;
-   bool shelf_in_use = get_shelf(db, shelf_name, &user, &shelf);
+   bool shelf_in_use = get_shelf(heap, db, shelf_name, &user, &shelf);
 
    if(shelf_in_use){
       bool same_item = strcmp(user->name, item) == 0;
@@ -246,13 +246,13 @@ enum db_error db_put_item_on_shelf(database_t *db, const char *item, const char 
       }else{
          if(db->undo_enabled) undo_stack_edit(db->undo, user, user->name);
          elem_t new = (elem_t) (void*) make_shelf(strdup(shelf_name), amount);
-         list_append(user->shelves, new);
+         list_append(heap, user->shelves, new);
          return DB_NO_ERROR;
       }
    }
 }
 
-enum db_error db_remove_item_from_shelf(database_t *db, const char *shelf, const int amount){
+enum db_error db_remove_item_from_shelf(heap_t *heap, database_t *db, const char *shelf, const int amount){
    if(amount < 0){
       return DB_INVALID_AMOUNT;
    }
@@ -262,7 +262,7 @@ enum db_error db_remove_item_from_shelf(database_t *db, const char *shelf, const
 
    item_t *item;
    shelf_t *shelf_point;
-   bool shelf_in_use = get_shelf(db, shelf, &item, &shelf_point);
+   bool shelf_in_use = get_shelf(heap, db, shelf, &item, &shelf_point);
 
    if(!shelf_in_use){
       return DB_SHELF_NO_EXIST;
@@ -274,7 +274,7 @@ enum db_error db_remove_item_from_shelf(database_t *db, const char *shelf, const
 
    if(shelf_point->num <= 0){
       int i = 0; //superfult sätt att göra detta på
-      list_iterator_t *ite = list_get_iterator(item->shelves);
+      list_iterator_t *ite = list_get_iterator(heap, item->shelves);
       while(list_iterator_has_next(ite)){
          if((*list_iterator_next(ite)).p == shelf_point){ //borde vara samma
             break;
@@ -288,20 +288,20 @@ enum db_error db_remove_item_from_shelf(database_t *db, const char *shelf, const
    return DB_NO_ERROR;
 }
 
-enum db_error db_shelf_is_in_use(const database_t *db, const char *shelf_name, char const **owner, int *owner_amount){
+enum db_error db_shelf_is_in_use(heap_t *heap, const database_t *db, const char *shelf_name, char const **owner, int *owner_amount){
    if(!db_is_valid_shelf_name(shelf_name)){
       return DB_INVALID_SHELF_NAME;
    }
    item_t *item;
    shelf_t *shelf;
-   bool success = get_shelf(db, shelf_name, &item, &shelf);
+   bool success = get_shelf(heap, db, shelf_name, &item, &shelf);
    if(!success) return DB_NO_ERROR;
    if(owner != NULL) *owner = item->name;
    if(owner_amount != NULL) *owner_amount = shelf->num;
    return DB_SHELF_BUSY;
 }
 
-enum db_error db_get_shelves(const database_t *db, const char *item, elem_t **shelves, int *amount){
+enum db_error db_get_shelves(heap_t *heap, const database_t *db, const char *item, elem_t **shelves, int *amount){
    if(!db_valid_item_name(item)){
       return DB_INVALID_ITEM_NAME;
    }
@@ -315,7 +315,7 @@ enum db_error db_get_shelves(const database_t *db, const char *item, elem_t **sh
 
    *shelves = malloc(sizeof(elem_t) * (*amount));
 
-   list_iterator_t *iterator = list_get_iterator(ite->shelves);
+   list_iterator_t *iterator = list_get_iterator(heap, ite->shelves);
    int i = 0;
    while(list_iterator_has_next(iterator)){
       (*shelves)[i] = *list_iterator_next(iterator);
@@ -336,18 +336,18 @@ const char* db_shelf_get_name(const elem_t shelf){
 
 //////////////////////////////////// files ////////////////////////////////////
 
-enum db_error db_save(const database_t *db, const char *filename){
+enum db_error db_save(heap_t *heap, const database_t *db, const char *filename){
    const item_t **items = (const item_t**) tree_elements(db->tree);
-   bool success = db_file_save(items, tree_size(db->tree), filename);
+   bool success = db_file_save(heap, items, tree_size(db->tree), filename);
    free(items);
    if(!success) return DB_FILE_ERROR;
    return DB_NO_ERROR;
 }
 
-enum db_error db_load(database_t **db, const char *filename){
+enum db_error db_load(heap_t *heap, database_t **db, const char *filename){
    item_t **items;
    int items_len;
-   bool success = db_file_get(&items, &items_len, filename);
+   bool success = db_file_get(heap, &items, &items_len, filename);
    if(success){
       *db = db_new();
       for(int i = 0; i < items_len; i++){

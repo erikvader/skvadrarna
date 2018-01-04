@@ -102,7 +102,7 @@ void db_undo_enable(database_t *db, bool enable);
 /// \param price price for the new item
 /// \returns ::DB_NO_ERROR if successfully added and all preconditions true
 /// \see db_remove_item, db_valid_name, db_valid_price, db_undo, db_item_exists
-enum db_error db_add_item(database_t *db, const char *name, const char *description, const int price);
+enum db_error db_add_item(heap_t *heap, database_t *db, const char *name, const char *description, const int price);
 
 /// Checks if an item already exists in \p db
 ///
@@ -291,7 +291,7 @@ bool db_is_valid_shelf_name(const char *name);
 /// \param shelf_name name of a shelf to add \p item on
 /// \param amount of \p item
 /// \returns ::DB_NO_ERROR if successful
-enum db_error db_put_item_on_shelf(database_t *db, const char *item, const char *shelf_name, const int amount);
+enum db_error db_put_item_on_shelf(heap_t *heap, database_t *db, const char *item, const char *shelf_name, const int amount);
 
 /// removes an item from a shelf
 ///
@@ -307,7 +307,7 @@ enum db_error db_put_item_on_shelf(database_t *db, const char *item, const char 
 /// \param shelf to act on
 /// \param amount to remove
 /// \returns ::DB_NO_ERROR if successful
-enum db_error db_remove_item_from_shelf(database_t *db, const char *shelf, const int amount);
+enum db_error db_remove_item_from_shelf(heap_t *heap, database_t *db, const char *shelf, const int amount);
 
 /// checks whether \p shelf_name is in use
 ///
@@ -321,7 +321,7 @@ enum db_error db_remove_item_from_shelf(database_t *db, const char *shelf, const
 /// \param owner place to store the name of the item who is using \p shelf_name. Can be NULL of this result isn't of interest
 /// \param owner_amount place to store amount of \p owner on \p shelf_name. Can be NULL of this result isn't of interest
 /// \returns an ::enum db_error describing the status of \p shelf_name
-enum db_error db_shelf_is_in_use(const database_t *db, const char *shelf_name, const char **owner, int *owner_amount);
+enum db_error db_shelf_is_in_use(heap_t *heap, const database_t *db, const char *shelf_name, const char **owner, int *owner_amount);
 
 //////////////////////////////// shelf iterator ///////////////////////////////
 
@@ -344,7 +344,7 @@ enum db_error db_shelf_is_in_use(const database_t *db, const char *shelf_name, c
 /// \param amount pointer to store the amount of shelves retrieved in \p shelves
 /// \returns ::DB_NO_ERROR if retrieval was successful
 /// \see db_shelf_get_amount db_shelf_get_name
-enum db_error db_get_shelves(const database_t *db, const char *item, elem_t **shelves, int *amount);
+enum db_error db_get_shelves(heap_t *heap, const database_t *db, const char *item, elem_t **shelves, int *amount);
 
 /// get amount of items stored on this shelf
 ///
@@ -371,13 +371,13 @@ const char* db_shelf_get_name(const elem_t shelf);
 /// \param db db to save
 /// \param filename name of file to save in
 /// \returns ::DB_FILE_ERROR if it could not be saved
-enum db_error db_save(const database_t *db, const char *filename);
+enum db_error db_save(heap_t *heap, const database_t *db, const char *filename);
 
 /// loads a database stored in a file
 ///
 /// \param db pointer to save the newly allocated database in
 /// \param filename name of file to read from
 /// \returns ::DB_FILE_ERROR if not successful
-enum db_error db_load(database_t **db, const char *filename);
+enum db_error db_load(heap_t *heap, database_t **db, const char *filename);
 
 #endif

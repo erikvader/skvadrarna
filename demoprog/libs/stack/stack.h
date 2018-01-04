@@ -4,12 +4,13 @@
 #include <stdbool.h>
 #include "../common.h"
 #include "../list/list.h"
+#include "../../../src/include/gc.h"
 
 typedef list_t stack_t;
 
-stack_t *stack_new(element_copy_fun copy, element_free_fun free);
+stack_t *stack_new(heap_t *heap, element_copy_fun copy, element_free_fun free);
 
-void stack_push(stack_t* stack, elem_t ele);
+void stack_push(heap_t *heap, stack_t* stack, elem_t ele);
 
 bool stack_pop(stack_t* stack, elem_t *ele);
 

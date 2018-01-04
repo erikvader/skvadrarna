@@ -16,7 +16,7 @@
 /// \param items_len length of \p items
 /// \param filename path to a file
 /// \returns true if it was successfully saved
-bool db_file_save(item_t const *const *items, const int items_len, const char *filename);
+bool db_file_save(heap_t *heap, item_t const *const *items, const int items_len, const char *filename);
 
 /// reads an array of items from a file
 ///
@@ -24,6 +24,6 @@ bool db_file_save(item_t const *const *items, const int items_len, const char *f
 /// \param item_len pointer to an int where the amount of items read will be stored
 /// \param filename path to a file to read from.
 /// \returns true if the reading was successful
-bool db_file_get(item_t ***items, int *item_len, const char *filename);
+bool db_file_get(heap_t *heap, item_t ***items, int *item_len, const char *filename);
 
 #endif

@@ -1,12 +1,13 @@
 #include "stack.h"
 #include <stdlib.h>
 
-stack_t *stack_new(element_copy_fun copy, element_free_fun free){
-   return list_new(copy, free, NULL);
+
+stack_t *stack_new(heap_t *heap, element_copy_fun copy, element_free_fun free){
+  return list_new(heap, copy, free, NULL);
 }
 
-void stack_push(stack_t* stack, elem_t ele){
-   list_prepend(stack, ele);
+void stack_push(heap_t *heap, stack_t* stack, elem_t ele){
+  list_prepend(heap, stack, ele);
 }
 
 bool stack_pop(stack_t *stack, elem_t *ele){

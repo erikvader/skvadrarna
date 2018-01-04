@@ -5,7 +5,7 @@
 #define __common_h__
 
 #include <stdbool.h>
-
+#include "../../src/include/gc.h"
 /// element wrapper
 typedef union element elem_t;
 
