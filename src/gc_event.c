@@ -28,8 +28,8 @@ void explore(heap_t *heap, void **obj, bool *unsafe_chunks, bool *locked) {
         *obj = om_get_forwarding(*obj);
         restore_last_two(obj, backup);
 
-    } else if(!om_is_explored(*obj)) {
-        om_set_explored(*obj);
+    } else if(!om_get_explored(heap, *obj)) {
+        om_set_explored(heap, *obj);
         int cur_chunk = hm_get_pointer_chunk(heap, *obj);
 
         if(!unsafe_chunks[cur_chunk]) {
