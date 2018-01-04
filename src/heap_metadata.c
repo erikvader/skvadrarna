@@ -18,10 +18,8 @@ typedef struct heap_header {
     size_t chunk_siz;
     // if the stack is safe or not
     bool unsafe_stack;
-	
-	//bit for checking whether objects are explored or not.
-	bool exploration_bit;	
-	
+    //bit for checking whether objects are explored or not.
+    bool exploration_bit;
     // the threashold for when a gc_event should trigger
     float gc_threshold;
     // the bit_array for which space is used
@@ -56,7 +54,7 @@ void hm_init(heap_t *heap, size_t size, bool unsafe_stack, float gc_threshold) {
     head -> gc_threshold = gc_threshold;
 
     head -> free_pointers = ((void *) heap) + sizeof(heap_header_t);
-	head -> exploration_bit = true;
+    head -> exploration_bit = true;
     int n_chunks = hm_get_amount_chunks(heap);
     for(int i = 0; i < n_chunks; i++) {
         head->free_pointers[i] = head->heap_start + i * head->chunk_siz;
@@ -72,14 +70,14 @@ size_t hm_measure_required_space(size_t heap_siz) {
 /*
  * Allocation/deallocation functions
  */
-size_t chunk_get_free_space(heap_t *heap, chunk_t chunk) {
+size_t chunk_calc_avail_space(heap_t *heap, chunk_t chunk) {
     heap_header_t *header = (heap_header_t *) heap;
     void *chunk_start = header->heap_start + header->chunk_siz * chunk;
     size_t used_space = header->free_pointers[chunk] - chunk_start;
     return header->chunk_siz - used_space;
 }
 
-void *hm_reserve_space(heap_t *heap, size_t obj_siz) { //TODO: Must work with mutiple objects in same chunk.
+void *hm_get_free_space(heap_t *heap, size_t obj_siz) { //TODO: Must work with mutiple objects in same chunk.
     int n_chunks = hm_get_amount_chunks(heap);
     bool banned_chunks[n_chunks];
     memset(banned_chunks, false, n_chunks);
@@ -95,8 +93,8 @@ void *hm_alloc_spec_chunk(heap_t *heap, size_t obj_siz, bool *ban) {
     }
     heap_header_t *head = (heap_header_t *) heap; //So we're able to use header metadata
     void *free_space = head->heap_start;
-    for (int i = 0; i < hm_get_amount_chunks(heap); i++) {
-        if(chunk_get_free_space(heap, i) >= obj_siz && !ban[i]) {
+    for(int i = 0; i < hm_get_amount_chunks(heap); i++) {
+        if(chunk_calc_avail_space(heap, i) >= obj_siz && !ban[i]) {
             void *allocated = head->free_pointers[i];
             head->free_pointers[i] += obj_siz;
             head->free_pointers[i] = align_pointer(head->free_pointers[i]);
@@ -115,19 +113,6 @@ void hm_reset_chunk(heap_t *heap, chunk_t index) {
 }
 
 
-bool hm_get_explored_bit(heap_t *heap)
-{
-   	heap_header_t *header = (heap_header_t *) heap;
-	return (head -> exploration_bit);
-}
-
-
-void hm_toggle_explored_bit(heap_t *heap)
-{
- 	heap_header_t *header = (heap_header_t *) heap;
-	head -> exploration_bit = !(head -> exploration_bit);
-}
-
 /*
  * Memory availability/pressure functions
  */
@@ -145,7 +130,7 @@ bool hm_over_threshold(heap_t *heap) {
 size_t hm_size_available(heap_t *heap) { //
     size_t free_space = 0;
     for(int i = 0; i < hm_get_amount_chunks(heap); i ++) {
-        free_space += chunk_get_free_space(heap, i);
+        free_space += chunk_calc_avail_space(heap, i);
     }
     return free_space;
 }
@@ -161,15 +146,14 @@ void hm_get_used_chunks(heap_t *heap, bool *data) {
     assert(heap && data);
     int n_chunks = hm_get_amount_chunks(heap);
     for(int i = 0; i < n_chunks; i++) {
-        data[i] = chunk_get_free_space(heap, i) < CHUNK_SIZE;
+        data[i] = chunk_calc_avail_space(heap, i) < CHUNK_SIZE;
     }
 }
 
 /*
  * Other getters & info functions
  */
-bool hm_is_unsafe(heap_t *heap)
-{
+bool hm_is_unsafe(heap_t *heap) {
     heap_header_t *head = (heap_header_t *) heap;
     return (head -> unsafe_stack);
 }
@@ -206,4 +190,15 @@ bool hm_pointer_exists(heap_t *heap, void *pointer) {
     } else {
         return false;
     }
+}
+
+bool hm_get_explored_bit(heap_t *heap) {
+    heap_header_t *header = (heap_header_t *) heap;
+    return (header -> exploration_bit);
+}
+
+
+void hm_toggle_explored_bit(heap_t *heap) {
+    heap_header_t *header = (heap_header_t *) heap;
+    header -> exploration_bit = !(header -> exploration_bit);
 }
