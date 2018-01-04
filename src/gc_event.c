@@ -3,6 +3,7 @@
 #include "include/stack_iter.h"
 #include "include/object_metadata.h"
 #include <string.h>
+#include <stdio.h>
 
 // extracts the last two bits of a pointer
 static
@@ -33,7 +34,10 @@ void explore(heap_t *heap, void **obj, bool *unsafe_chunks, bool *locked) {
 
         if(!unsafe_chunks[cur_chunk]) {
             void *copy = hm_alloc_spec_chunk(heap, om_size(*obj), locked);
-            //TODO: if(fail) ???
+            if(copy == NULL){
+                fprintf(stderr, "Garbage collection error: Not enough space, too many live objects or threshold too high.\n");
+                exit(1);
+            }
             om_copy(copy, *obj); //dest, src
             om_set_forwarding(*obj, copy);
             *obj = copy;
