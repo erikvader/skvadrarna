@@ -59,9 +59,9 @@ void explore(heap_t *heap, void **obj, bool *unsafe_chunks, bool *locked) {
 static
 void mark(heap_t *heap, bool *unsafe_chunks, void **start) {
 
-    while(*start != environ) {
+    while(*start != NULL) {
         void **next = si_next_pointer(heap, start);
-        if(*next != environ) {
+        if(*next != NULL) {
             int cur_chunk = hm_get_pointer_chunk(heap, *next);
             unsafe_chunks[cur_chunk] = true;
         }
@@ -95,14 +95,14 @@ void gce_run_gc_event(heap_t *heap) {
 
     //get locked chunks
     bool locked[num_chunks];
-    init_variable_sized_array(locked, false, num_chunks); //TODO: is this even necessary?!?
+    init_variable_sized_array(locked, false, num_chunks);
     hm_get_used_chunks(heap, locked);
 
     //explore
     stack_search_start = &stack_search_start;
-    while(stack_search_start != environ) {
+    while(stack_search_start != NULL) {
         void **next = si_next_pointer(heap, &stack_search_start);
-        if(*next != environ) {
+        if(*next != NULL) {
             explore(heap, next, unsafe_chunks, locked);
         }
     }
