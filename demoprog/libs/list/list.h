@@ -11,6 +11,7 @@
 
 #include <stdbool.h>
 #include "../common.h"
+#include "../../../src/include/gc.h"
 
 typedef struct list list_t;
 typedef struct node node_t;
@@ -21,7 +22,7 @@ typedef struct node node_t;
 /// \param free (may be NULL) used to free elements in list_delete
 /// \param compare (may be NULL) used to compare elements in list_contains
 /// \returns: empty list
-list_t *list_new(element_copy_fun copy, element_free_fun free, element_comp_fun compare);
+list_t *list_new(heap_t *heap, element_copy_fun copy, element_free_fun free, element_comp_fun compare);
 
 
 /// Inserts a new element at a given index.
@@ -36,7 +37,7 @@ list_t *list_new(element_copy_fun copy, element_free_fun free, element_comp_fun 
 /// \param list  pointer to the list
 /// \param index the index for elem to be inserted at
 /// \param elem  the element to be inserted
-void list_insert(list_t *list, int index, elem_t elem);
+void list_insert(heap_t *heap, list_t *list, int index, elem_t elem);
 
 /// Inserts a new element at the end of the list.
 ///
@@ -45,7 +46,7 @@ void list_insert(list_t *list, int index, elem_t elem);
 ///
 /// \param list pointer to the list
 /// \param elem the element to be appended
-void list_append(list_t *list, elem_t elem);
+void list_append(heap_t *heap, list_t *list, elem_t elem);
 
 /// Inserts a new element at the beginning of the list
 ///
@@ -54,7 +55,7 @@ void list_append(list_t *list, elem_t elem);
 ///
 /// \param list pointer to the list
 /// \param elem the element to be prepended
-void list_prepend(list_t *list, elem_t elem);
+void list_prepend(heap_t *heap, list_t *list, elem_t elem);
 
 /// Removes an element from a list.
 ///

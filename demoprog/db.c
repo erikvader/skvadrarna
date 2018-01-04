@@ -6,7 +6,7 @@
 #include "libs/tree/tree.h"
 #include "libs/list/list.h"
 #include "libs/list/list_iterator.h"
-
+#include "../src/include/gc.h"
 
 
 char *main_menu = "\n\
@@ -244,13 +244,13 @@ bool add_shelf(item_t *item, tree_t *tree){
 }
 
 // Lists all shelves in item, prompts the user for one to be removed.
-void remove_shelf(item_t *item){
+void remove_shelf(heap_t* heap, item_t *item){
    list_t *shelves = item->shelves;
    if(list_length(shelves) == 0){
       printf("Finns inget att ta bort ju\n");
       return;
    }
-   char** names = malloc(sizeof(char*)*(list_length(shelves)));
+   char** names = h_alloc_data(heap, (sizeof(char*)*(list_length(shelves)));
    int i = 0;
    list_iterator_t *ite = list_get_iterator(shelves);
    while(list_iterator_has_next(ite)){
@@ -271,7 +271,7 @@ void remove_shelf(item_t *item){
 
 // Prompts the user to directly edit 'item'.
 // track_undo: whether or not to add an undo_action.
-void edit_chosen_item(item_t *item, tree_t *tree, bool track_undo){
+   void edit_chosen_item(heap_t *heap, item_t *item, tree_t *tree, bool track_undo){
    bool made_change = false;
    item_t *original = NULL;
    if(track_undo) original = copy_item(item);
@@ -293,7 +293,7 @@ void edit_chosen_item(item_t *item, tree_t *tree, bool track_undo){
          made_change = true;
          break;
       case 'R':
-         remove_shelf(item);
+         remove_shelf(heap, item);
          made_change = true;
          break;
       case 'L':
@@ -311,7 +311,7 @@ void edit_chosen_item(item_t *item, tree_t *tree, bool track_undo){
 }
 
 // prompts the user to select an item to edit
-void edit_items(tree_t *t){
+   void edit_items(heap_t *heap, tree_t *t){
    int size = tree_size(t);
    if (size == 0) {
       printf("Det finns absolut ingenting här!\n");
@@ -320,7 +320,7 @@ void edit_items(tree_t *t){
       int choice = list_lines(keys, size, list_lines_prompt);
       if(choice != -1){
          printf("\n");
-         edit_chosen_item(tree_get(t, keys[choice]), t, true);
+         edit_chosen_item(heap, tree_get(t, keys[choice]), t, true);
       }
       free(keys);
    }
@@ -436,7 +436,7 @@ void tree_cleanup(K key, T elem){
 }
 
 // main loop of the program
-void event_loop(){
+void event_loop(heap_t * heap){
    tree_t *tree = tree_new();
 
    printf("\n");
@@ -457,7 +457,7 @@ void event_loop(){
          visa_item(tree);
          break;
       case 'R':
-         edit_items(tree);
+         edit_items(heap, tree);
          break;
       case 'T':
          remove_items(tree);
@@ -477,7 +477,10 @@ void event_loop(){
    }
 }
 
+
 int main(void){
-   event_loop();
+  //                      size bytes, bool unsafe_stack, float gc_theshold
+  heap_t *heap = h_init(2048, true, 0.5);
+  event_loop(heap);
    return 0;
 }

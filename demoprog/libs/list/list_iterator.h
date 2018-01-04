@@ -21,7 +21,7 @@ typedef struct list_iterator list_iterator_t;
 /// 
 /// \param list the list
 /// \returns the list
-list_iterator_t *list_get_iterator(list_t *list);
+list_iterator_t *list_get_iterator(heap_t *heap, list_t *list);
 
 /// Returns true if the iterator has more than
 /// inside it.

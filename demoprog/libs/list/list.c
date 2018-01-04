@@ -2,6 +2,7 @@
 #include "list.h"
 #include <stdio.h>
 #include "list_iterator.h"
+#include "../../../src/include/gc.h"
 
 struct node {
     elem_t value;
@@ -35,8 +36,8 @@ int default_compare(elem_t elem1, elem_t elem2){
     return elem1.i - elem2.i;
 }
 
-list_t *list_new(element_copy_fun copy, element_free_fun free, element_comp_fun compare){
-    list_t *newList = malloc(sizeof(list_t));
+list_t *list_new(heap_t *heap, element_copy_fun copy, element_free_fun free, element_comp_fun compare){
+  list_t *newList = h_alloc_struct(heap, "*i***");
 
     if(newList != NULL){
         newList->first = NULL;
@@ -50,8 +51,8 @@ list_t *list_new(element_copy_fun copy, element_free_fun free, element_comp_fun 
     return newList;
 }
 
-node_t *node_new(elem_t value){
-    node_t *newNode = malloc(sizeof(node_t));
+node_t *node_new(heap_t *heap, elem_t value){
+  node_t *newNode = h_alloc_struct(heap, "**");
 
     if(newNode != NULL){
         newNode->value = value;
@@ -78,10 +79,10 @@ int actual_index(int list_len, int index){
 }
 
 
-void list_insert(list_t *list, int index, elem_t elem){
+void list_insert(heap_t *heap, list_t *list, int index, elem_t elem){
     index = actual_index(list->length+1, index);
 
-    node_t *newNode = node_new(list->elem_copy(elem));
+    node_t *newNode = node_new(heap, list->elem_copy(elem));
 
     if(list->length == 0){
         list->first =  newNode;
@@ -105,12 +106,12 @@ void list_insert(list_t *list, int index, elem_t elem){
     list->length += 1;
 }
 
-void list_append(list_t *list, elem_t elem){
-    list_insert(list, -1, elem);
+void list_append(heap_t *heap, list_t *list, elem_t elem){
+  list_insert(heap, list, -1, elem);
 }
 
-void list_prepend(list_t *list, elem_t elem){
-    list_insert(list, 0, elem);
+void list_prepend(heap_t *heap, list_t *list, elem_t elem){
+  list_insert(heap, list, 0, elem);
 }
 
 void list_remove(list_t *list, int index, bool delete){
@@ -226,8 +227,8 @@ int list_contains(list_t *list, elem_t elem){
 
 // ----------------------- ITERATOR --------
 
-list_iterator_t *list_get_iterator(list_t *list){
-    list_iterator_t* new_iterator = malloc(sizeof(list_iterator_t));
+list_iterator_t *list_get_iterator(heap_t *heap, list_t *list){
+  list_iterator_t* new_iterator = h_alloc_struct(heap, "*");
 
     new_iterator->curr_node = &list->first;
 
