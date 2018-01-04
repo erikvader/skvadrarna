@@ -23,6 +23,10 @@ void restore_last_two(void **p, char last) {
 static
 void explore(heap_t *heap, void **obj, bool *unsafe_chunks, bool *locked) {
     char backup = get_last_two(obj);
+    if(!hm_pointer_exists(heap, *obj)){
+        restore_last_two(obj, backup);
+        return;
+    }
 
     if(om_has_forwarding(*obj)) {
         *obj = om_get_forwarding(*obj);
