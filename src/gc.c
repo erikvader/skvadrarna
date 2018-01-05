@@ -1,31 +1,81 @@
 #include <stdlib.h>
 #include "include/gc.h"
+#include "include/heap_metadata.h"
+#include "include/stack_iter.h"
+#include "include/gc_alloc.h"
+#include "include/gc_event.h"
 
-size_t global_side_siz = 2048;
+#define LARGE_ADDRESS ((size_t) 0x10000000)
 
-
-typedef struct heap_header{
-  void *heap_start;
-  size_t heap_siz;
-  size_t side_siz;
-  bool unsafe_stack;
-  float gc_threshold;
-  bool *used_arr;
-  void **free_pointers;
-} heap_header_t;
 
 heap_t *h_init(size_t bytes, bool unsafe_stack, float gc_threshold) {
-  heap_t *heap = (heap_t *) malloc(bytes);
-
+  void *mem_pos;
+  posix_memalign(&mem_pos,LARGE_ADDRESS,bytes);
+  heap_t *heap = mem_pos;
   
-  
-  heap_header_t heap_header = { .heap_start =  (((void *)heap) + sizeof(heap_header_t)),
-                                .heap_siz = bytes,
-                                .side_siz = global_side_siz,
-                                .unsafe_stack = unsafe_stack,
-                                .gc_threshold = gc_threshold,
-                                .used_arr = NULL,
-                                .free_pointers = NULL};
+  hm_init(heap,bytes,unsafe_stack,gc_threshold);
 
   return heap;
+}
+
+
+void h_delete(heap_t *heap) {
+  free(heap);
+}
+
+void h_delete_dbg(heap_t *heap, void *dbg_value) {
+  void *p = NULL;
+  void **iter = si_next_pointer(heap,&p);
+  while (iter != NULL) {
+    *iter = dbg_value;
+    iter = si_next_pointer(heap,iter);
+  }
+  
+  h_delete(heap);
+}
+
+void *h_alloc_struct(heap_t *heap, char *format) {
+  if (hm_over_threshold(heap)) {
+    h_gc(heap);
+  }
+
+  return gca_alloc_struct(heap,format);
+}
+
+void *h_alloc_data(heap_t *heap, size_t bytes) {
+  if (hm_over_threshold(heap)) {
+    h_gc(heap);
+  }
+  
+  return gca_alloc_data(heap,bytes);
+}
+
+size_t h_gc(heap_t *heap) {
+  size_t before = h_used(heap);
+
+  gce_run_gc_event(heap);
+
+  size_t after = h_used(heap);
+
+  return before - after;
+}
+
+
+size_t h_gc_dbg(heap_t *heap, bool unsafe_stack) {
+  bool prev_unsafe = hm_get_unsafe(heap);
+  hm_set_unsafe(heap,unsafe_stack);
+
+  size_t removed = h_gc(heap);
+
+  hm_set_unsafe(heap,prev_unsafe);
+
+  return removed;
+}
+
+size_t h_avail(heap_t *heap) {
+  return hm_size_available(heap);
+}
+
+size_t h_used(heap_t *heap) {
+  return hm_size_used(heap);
 }
