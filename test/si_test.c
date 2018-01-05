@@ -1,4 +1,5 @@
 #include <CUnit/CUnit.h>
+#include <stdint.h>
 #include "../src/include/stack_iter.h"
 #include "si_test.h"
 
@@ -13,7 +14,7 @@ bool si_false_is_in_heap_fun(heap_t *heap, void *p) {
 }
 
 bool si_DEADBEEF_is_in_heap_fun(heap_t *heap,void *p) {
-  unsigned long l = (unsigned long) p;
+  uintptr_t l = (uintptr_t) p;
   if ( l == 0xDEADBEEF) {
     return true;
   }
@@ -36,42 +37,42 @@ void si_test_environ() {
 }
 
 void si_test_align_neg() {
-  unsigned long alignment = 8;
+  uintptr_t alignment = 8;
 
-  unsigned long start = ((unsigned long) environ) - 128 - 3;
+  uintptr_t start = ((uintptr_t) environ) - 128 - 3;
   
   void **out = si_next_pointer_dbg(NULL, (void **) start ,si_true_is_in_heap_fun,alignment);
 
 
-  CU_ASSERT_TRUE( ((unsigned long) out) % alignment == 0);
-  CU_ASSERT_TRUE( ((unsigned long) out) == (start + 3));
+  CU_ASSERT_TRUE( ((uintptr_t) out) % alignment == 0);
+  CU_ASSERT_TRUE( ((uintptr_t) out) == (start + 3));
 }
 
 void si_test_align_pos() {
-  unsigned long alignment = 8;
+  uintptr_t alignment = 8;
 
-  unsigned long start = ((unsigned long) environ) + 128 + 3;
+  uintptr_t start = ((uintptr_t) environ) + 128 + 3;
   
   void **out  = si_next_pointer_dbg(NULL, (void **) start,si_true_is_in_heap_fun,alignment);
 
-  CU_ASSERT_TRUE( ((unsigned long) out) % alignment == 0);
-  CU_ASSERT_TRUE( (unsigned long) out == start - 3);
+  CU_ASSERT_TRUE( ((uintptr_t) out) % alignment == 0);
+  CU_ASSERT_TRUE( (uintptr_t) out == start - 3);
 }
 
 void si_test_step_once() {
-  unsigned long alignment = 8;
+  uintptr_t alignment = 8;
 
-  unsigned long start = (unsigned long) environ + (8 * alignment);
+  uintptr_t start = (uintptr_t) environ + (8 * alignment);
   
   void ** out = si_next_pointer_dbg(NULL,(void **) start, si_true_is_in_heap_fun,alignment);
 
-  CU_ASSERT_TRUE(((unsigned long) out) == start - alignment);
+  CU_ASSERT_TRUE(((uintptr_t) out) == start - alignment);
 }
 
 void si_test_step_to_environ() {
-  unsigned long alignment = 8;
+  uintptr_t alignment = 8;
 
-  unsigned long start = (unsigned long) environ + (8 * alignment);
+  uintptr_t start = (uintptr_t) environ + (8 * alignment);
   
   void ** out = si_next_pointer_dbg(NULL,(void **) start, si_false_is_in_heap_fun,alignment);
 
@@ -89,7 +90,7 @@ void **si_test_step_to_DEADBEEF_aux(int n,size_t alignment) {
 }
 
 void si_test_step_to_DEADBEEF() {
-  unsigned long alignment = 8;
+  uintptr_t alignment = 8;
 
   void *to_find = (void *) 0xDEADBEEF;
 

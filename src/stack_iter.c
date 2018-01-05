@@ -1,9 +1,10 @@
 #include "include/stack_iter.h"
 //#include <stdio.h>
 #include "include/heap_metadata.h"
+#include <stdint.h>
 
 extern char **environ;
-#define bot ((unsigned long) environ)
+#define bot ((uintptr_t) environ)
 size_t global_alignment = sizeof(void *);
 
 #define iter_step(mod,siz)     \
@@ -25,7 +26,7 @@ void **si_next_pointer_dbg(heap_t *heap, void **top, si_pointer_check_fun fun, s
     return NULL;
   }
   
-  unsigned long out = (unsigned long) top;
+  uintptr_t out = (uintptr_t) top;
   
   if (out % alignment == 0) {
     iter_step(out, alignment);
