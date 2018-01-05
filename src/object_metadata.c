@@ -515,23 +515,7 @@ bool om_get_explored(const heap_t * heap, const void * object){
 /// \param object, the object to switch between true and false for om_is_explored.
 
 void om_set_explored(const heap_t * heap, void * object){
-  if(hm_get_explored_bit(heap)){
-    if(IS_FORMAT_STRING){
-      SET_FORMAT_STRING;
-    }else if(IS_BIT_ARRAY){
-      SET_BIT_ARRAY;
-    }else if(IS_SIZE){
-      SET_SIZE;
-    }    
-  }else{
-    if(IS_FORMAT_STRING){
-      write_2_bits_last(object, 0, 2);
-    } else if(IS_BIT_ARRAY){
-      write_2_bits_last(object, 2, 2);
-    } else if(IS_SIZE){
-      write_2_bits_last(object, 2, 3);
-    }
-  }
+  edit_explored(heap,object,true);
 
 }
 
