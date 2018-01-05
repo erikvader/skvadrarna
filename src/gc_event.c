@@ -4,6 +4,7 @@
 #include "include/object_metadata.h"
 #include <string.h>
 #include <stdio.h>
+#include <assert.h>
 
 // extracts the last two bits of a pointer
 static
@@ -22,6 +23,7 @@ void restore_last_two(void **p, char last) {
 // copy all live objects
 static
 void explore(heap_t *heap, void **obj, bool *unsafe_chunks, bool *locked) {
+    assert(obj != NULL);
     char backup = get_last_two(obj);
     if(!hm_pointer_exists(heap, *obj)) {
         restore_last_two(obj, backup);
@@ -37,22 +39,25 @@ void explore(heap_t *heap, void **obj, bool *unsafe_chunks, bool *locked) {
         int cur_chunk = hm_get_pointer_chunk(heap, *obj);
 
         if(!unsafe_chunks[cur_chunk]) {
-            void *copy = hm_alloc_spec_chunk(heap, om_size(*obj), locked);
+            size_t obj_size = om_size(*obj);
+            void *copy = hm_alloc_spec_chunk(heap, obj_size, locked);
             if(copy == NULL) {
                 fprintf(stderr, "Garbage collection error: Not enough space, too many live objects or threshold too high.\n");
                 exit(1);
             }
-            om_copy(copy, *obj); //dest, src
+            om_build_copy(copy, *obj); //dest, src
+            memcpy(copy, *obj, obj_size);
             om_set_forwarding(*obj, copy);
             *obj = copy;
         }
-
-        restore_last_two(obj, backup);
 
         //loop all pointers
         int pointer_num = om_amount_pointers(*obj);
         void **pointers[pointer_num];
         om_get_pointers(*obj, pointers);
+
+        restore_last_two(obj, backup);
+
         for(int i = 0; i < pointer_num; i++) {
             explore(heap, pointers[i], unsafe_chunks, locked);
         }
