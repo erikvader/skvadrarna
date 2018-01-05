@@ -82,6 +82,50 @@ bool test_pointers(void){
   return returnvalue;
 
 }
+bool test_explored(){
+  bool returnvalue = true;
+  if(om_is_explored(object)){
+    returnvalue = false;
+    printf("Error: explored as default");   
+
+  }
+  om_toggle_explored(object);
+  if(!om_is_explored(object)){
+    returnvalue = false;
+    printf("Error: explored not after toggle");
+  }
+  if(!test_size()){
+    returnvalue = false;
+    printf("Error: size doesnt work after explored.");
+  }
+  om_toggle_explored(object);
+  if(om_is_explored(object)){
+    returnvalue = false;
+    printf("Error: explored after double toggle");
+  }
+  if(!test_size()){
+    returnvalue = false;
+    printf("Error: size doesnt work after double toggle.");
+    
+  }
+  return returnvalue;
+}
+bool test_build_copy(){
+  void* object_old = object;
+  object = calloc(101,sizeof(void*))+sizeof(void*);
+  om_build_copy(object,object_old);
+  if(!test_size()){
+    printf("Error: build_copy doesnt work.");
+    free(object);
+    object = object_old;
+    return false;
+  }
+  free(object- sizeof(void*));
+  object = object_old;
+  return true;
+  
+
+}
 
 bool test_redirect(){
   bool returnvalue = true;
@@ -108,6 +152,7 @@ bool test_redirect(){
   
   return returnvalue;
 }
+
 
 /* The main() function for setting up and running the tests.
  * Returns a CUE_SUCCESS on successful running, another
@@ -149,6 +194,21 @@ int main(void)
     }else{
       printf("Pointertest %d: FEL!\n", testnr);
     }
+
+    if(test_explored()){
+      printf("Exploredtest %d: OK!\n", testnr);
+    }else{
+      printf("Exploredtest %d: FEL!\n", testnr);
+    
+    }
+    
+    if(test_build_copy()){
+      printf("Build_copy %d: OK!\n", testnr);
+    }else{
+      printf("Build_copy %d: FEL!\n", testnr);
+    
+    }
+    
     if(test_redirect()){
       printf("Redirecttest %d: OK!\n", testnr);
     }else{

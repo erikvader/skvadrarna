@@ -13,7 +13,7 @@ const size_t header_siz;
 ///
 /// \param object place where the object is stored
 /// \param size the size of the object to be stored.
-void om_build_pointerless(void *object, const size_t size);
+void om_build_pointerless(const heap_t* heap, void *object, const size_t size);
 
 /// builds a metadata given a format string.
 ///
@@ -23,6 +23,22 @@ void om_build_pointerless(void *object, const size_t size);
 /// \returns false if build didn't succed, probably because format string is big and there is not enough space to alloc a object to store the format string in.
 
 bool om_build(heap_t* heap, void* object, const char* format);
+
+/// Builds a metadata given a src to copy
+///
+/// \param trg_obj Adress to the object that will get its header built.
+/// \param src_obj Adress to object to copy header from.
+/// \param format_str_obj Adress to a object that can hold the format string
+
+void om_build_copy(void *trg_obj, const void* src_obj);
+
+/// returns strlen of format string includin '/0'
+///
+/// \param object Adress to an object
+/// \returns length of the format string including '/0' or 0 if no format string exist
+
+size_t om_format_len(const void * object);
+
 
 /// returns the size of the object
 ///
@@ -79,5 +95,20 @@ void om_set_forwarding(void *object, const void *adress);
 /// \returns The forwarding adress if it has one, else NULL.
 
 void *om_get_forwarding(const void *object);
+
+/// Gets is_explored information
+///
+/// \param object The object.
+/// \returns True if the funciton om_toggle_explored has been called a odd number of times.
+
+bool om_get_explored(const heap_t * heap, const void * object);
+
+/// Switches the is_explored between true and false:
+/// Default false
+///
+/// \param object, the object to switch between true and false for om_is_explored.
+
+void om_set_explored(const heap_t * heap, void * object);
+
 
 #endif
