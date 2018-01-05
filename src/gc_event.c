@@ -23,7 +23,7 @@ void restore_last_two(void **p, char last) {
 static
 void explore(heap_t *heap, void **obj, bool *unsafe_chunks, bool *locked) {
     char backup = get_last_two(obj);
-    if(!hm_pointer_exists(heap, *obj)){
+    if(!hm_pointer_exists(heap, *obj)) {
         restore_last_two(obj, backup);
         return;
     }
@@ -38,7 +38,7 @@ void explore(heap_t *heap, void **obj, bool *unsafe_chunks, bool *locked) {
 
         if(!unsafe_chunks[cur_chunk]) {
             void *copy = hm_alloc_spec_chunk(heap, om_size(*obj), locked);
-            if(copy == NULL){
+            if(copy == NULL) {
                 fprintf(stderr, "Garbage collection error: Not enough space, too many live objects or threshold too high.\n");
                 exit(1);
             }
