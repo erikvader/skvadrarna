@@ -42,7 +42,7 @@ elem_t item_to_elem_t(item_t *item);
 elem_t key_char_to_elem_t(const char *key);
 
 //creates a shelf on the heap
-shelf_t* make_shelf(char *name, int num);
+shelf_t* make_shelf(heap_t *heap, char *name, int num);
 
 //creates an item on the heap
 item_t* make_item(heap_t *heap, char *name, char *desc, int price);
@@ -51,6 +51,6 @@ item_t* make_item(heap_t *heap, char *name, char *desc, int price);
 item_t* copy_item(heap_t *heap, item_t *item);
 
 //returnes a copy of \p s on the heap
-shelf_t* copy_shelf(shelf_t *s);
+shelf_t* copy_shelf(heap_t *heap, shelf_t *s);
 
 #endif

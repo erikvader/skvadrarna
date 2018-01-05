@@ -7,17 +7,17 @@ enum tree_rotate_dir {ROTATE_LEFT, ROTATE_RIGHT};
 
 typedef struct tree_node tree_node;
 struct tree_node {
-   int height;
-   elem_t data;
-   tree_key_t key;
-   tree_node* parent;
-   union {
-      struct{
-         tree_node* left;
-         tree_node* right;
-      };
-      tree_node* child[2];
-   };
+  int height;
+  elem_t data;
+  tree_key_t key;
+  tree_node* parent;
+  union {
+    struct{
+      tree_node* left;
+      tree_node* right;
+    };
+    tree_node* child[2];
+  };
 };
 
 struct tree{
@@ -44,8 +44,8 @@ int default_compare(elem_t a, elem_t b){
    return a.i - b.i;
 }
 
-tree_t *tree_new(element_copy_fun elem_copy, key_copy_fun key_copy, element_free_fun elem_free, key_free_fun key_free, element_comp_fun compare){
-   tree_t *new = malloc(sizeof(tree_t));
+tree_t *tree_new(heap_t *heap, element_copy_fun elem_copy, key_copy_fun key_copy, element_free_fun elem_free, key_free_fun key_free, element_comp_fun compare){
+  tree_t *new = h_alloc_struct(heap, "**8c8c8c8c");
 
    if (new != NULL){
       new->root = NULL;
@@ -59,8 +59,8 @@ tree_t *tree_new(element_copy_fun elem_copy, key_copy_fun key_copy, element_free
    return new;
 }
 
-tree_node* new_node(tree_key_t key, elem_t data, tree_node* parent){
-   tree_node* new = malloc(sizeof(tree_node));
+tree_node* new_node(heap_t *heap, tree_key_t key, elem_t data, tree_node* parent){
+  tree_node* new = h_alloc_struct(heap, "i*****");
 
    if (new != NULL) {
       new->height = 1;
@@ -280,11 +280,11 @@ void balance(tree_node *n){
    if(n->parent != NULL) balance(n->parent);
 }
 
-bool tree_insert(tree_t* tree, tree_key_t key, elem_t elem){
+bool tree_insert(heap_t *heap, tree_t* tree, tree_key_t key, elem_t elem){
    tree_node *parent = NULL;
    tree_node **spot = find_node(tree, &(tree->root), &parent, key);
    if(*spot == NULL){
-      *spot = new_node(tree->key_copy(key), tree->ele_copy(elem), parent);
+     *spot = new_node(heap, tree->key_copy(key), tree->ele_copy(elem), parent);
       balance(*spot);
       return true;
    }else{
@@ -301,10 +301,10 @@ void tree_node_keys(tree_node *n, tree_key_t *arr, int *i){
 }
 
 
-tree_key_t* tree_keys(tree_t *tree){
+tree_key_t* tree_keys(heap_t *heap, tree_t *tree){
    int size = tree_size(tree);
    if(size == 0) return NULL;
-   tree_key_t *arr = malloc(sizeof(tree_key_t) * size);
+   tree_key_t *arr = h_alloc_struct(heap, "*");
    int i = 0;
    tree_node_keys(tree->root, arr, &i);
    return arr;
@@ -319,10 +319,10 @@ void tree_node_elements(tree_node *n, tree_key_t *arr, int *i){
 }
 
 
-elem_t* tree_elements(tree_t *t){
+elem_t* tree_elements(heap_t *heap, tree_t *t){
    int size = tree_size(t);
    if(size == 0) return NULL;
-   elem_t *arr = malloc(sizeof(elem_t) * size);
+   elem_t *arr = h_alloc_struct(heap, "*");
    int i = 0;
    tree_node_elements(t->root, arr, &i);
    return arr;

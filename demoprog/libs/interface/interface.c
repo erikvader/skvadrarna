@@ -126,7 +126,7 @@ void ask_shelf_delta(char **shelf, int *amount){
    }
 }
 
-void add_item(database_t* database){
+void add_item(heap_t *heap, database_t* database){
     char *name;
     char *description;
     int price = 0;
@@ -143,7 +143,7 @@ void add_item(database_t* database){
         ask_desc(&description);
         ask_price(&price);
 
-        db_add_item(database, name, description, price);
+        db_add_item(heap, database, name, description, price);
         free(description);
     }
 
@@ -151,7 +151,7 @@ void add_item(database_t* database){
     bool running = true;
     while(running){
        ask_shelf(&shelf, &amount);
-       enum db_error err = db_put_item_on_shelf(database, name, shelf, amount);
+       enum db_error err = db_put_item_on_shelf(heap, database, name, shelf, amount);
        if(err == DB_SHELF_BUSY){
           printf("Det ligger redan något på %s, försök igen ty\n", shelf);
           free(shelf);
@@ -174,7 +174,7 @@ void print_shelves(elem_t *shelves, int amount){
     }
 }
 
-void print_product(database_t *database, const char* item){
+void print_product(heap_t *heap, database_t *database, const char* item){
     printf("Name: %s\n", item);
     const char *desc;
     db_get_item_desc(database, item, &desc);
@@ -184,7 +184,7 @@ void print_product(database_t *database, const char* item){
     printf("Price: %d\n", price);
     elem_t *shelves;
     int amount = 0;
-    db_get_shelves(database, item, &shelves, &amount);
+    db_get_shelves(heap, database, item, &shelves, &amount);
     print_shelves(shelves, amount);
     if(amount > 0)
        free(shelves);
@@ -261,7 +261,7 @@ int list_lines(database_t *database, bool end, int length){
     return -1;
 }
 
-char* print_items(database_t *database){
+char* print_items(heap_t *heap, database_t *database){
     int length = 0;
     const char **item_names = db_get_all_items(database, &length);
     int result = 0;
@@ -277,16 +277,16 @@ char* print_items(database_t *database){
            ret = NULL;
         }else{
            ret = strdup(item_names[result]);
-           print_product(database, ret);
+           print_product(heap, database, ret);
         }
         free(item_names);
         return ret;
     }
 }
 
-void edit_items(database_t *database){
+void edit_items(heap_t *heap, database_t *database){
    char *item;
-   item = print_items(database);
+   item = print_items(heap, database);
 
    bool running = true;
    if(item != NULL){
@@ -300,20 +300,20 @@ void edit_items(database_t *database){
          else{
             if(toupper(answer) == 'D'){
                char *desc = ask_question_string("Enter a new description: ");
-               db_set_item_desc(database, item, desc);
+               db_set_item_desc(heap, database, item, desc);
                free(desc);
                free(item);
                running = false;
             }
             else if(toupper(answer) == 'P'){
                int price = ask_question_int("Enter a new price: ");
-               db_set_item_price(database, item, price);
+               db_set_item_price(heap, database, item, price);
                free(item);
                running = false;
             }
             else if(toupper(answer) == 'N'){
                char *new_name = ask_question_string("Enter a new name: ");
-               db_set_item_name(database, item, new_name);
+               db_set_item_name(heap, database, item, new_name);
                free(new_name);
                free(item);
                running = false;
@@ -329,9 +329,9 @@ void edit_items(database_t *database){
                char *shelf;
                ask_shelf_delta(&shelf, &new_delta);
                if(new_delta > 0){
-                  db_put_item_on_shelf(database, item, shelf, new_delta);
+                 db_put_item_on_shelf(heap, database, item, shelf, new_delta);
                }else if(new_delta < 0){
-                  db_remove_item_from_shelf(database, shelf, -new_delta);
+                 db_remove_item_from_shelf(heap, database, shelf, -new_delta);
                }
 
                free(item);
@@ -350,13 +350,13 @@ void edit_items(database_t *database){
    }
 }
 
-void remove_item(database_t *database){
+void remove_item(heap_t *heap, database_t *database){
     char *item;
-    item = print_items(database);
+    item = print_items(heap, database);
     if(item == NULL){
        return;
     }
-    enum db_error error_message = db_remove_item(database, item);
+    enum db_error error_message = db_remove_item(heap, database, item);
 
     if(error_message == DB_INVALID_ITEM_NAME){
         printf("Invalid item name! Returning to the menu.");
@@ -369,7 +369,7 @@ void remove_item(database_t *database){
         return;
     }
     else{
-        db_remove_item(database, item);
+      db_remove_item(heap, database, item);
         free(item);
         return;
     }
@@ -396,9 +396,9 @@ void undo_item(database_t *database){
     free(name);
 }
 
-void save_file(database_t *database){
+void save_file(heap_t *heap, database_t *database){
     char *file_name = ask_question_string("Enter a filename: ");
-    enum db_error error_message = db_save(database, file_name);
+    enum db_error error_message = db_save(heap, database, file_name);
 
     if(error_message == DB_FILE_ERROR){
     printf("Could not save to file.");
@@ -412,10 +412,10 @@ void save_file(database_t *database){
     }
 }
 
-database_t *load_file(database_t *database){
+database_t *load_file(heap_t *heap, database_t *database){
     char *file_name = ask_question_string("Enter a file to load: ");
     database_t *new_db;
-    enum db_error error_message = db_load(&new_db, file_name);
+    enum db_error error_message = db_load(heap, &new_db, file_name);
 
     if(error_message == DB_FILE_ERROR){
     printf("Could not load file.");
@@ -430,7 +430,7 @@ database_t *load_file(database_t *database){
     }
 }
 
-void event_loop(){
+void event_loop(heap_t *heap){
     database_t *database = db_new();
 
     printf("\n");
@@ -443,26 +443,26 @@ void event_loop(){
 
         switch(toupper(input)){
             case 'A':
-                add_item(database);
+              add_item(heap, database);
                 break;
             case 'R':
-                remove_item(database);
+              remove_item(heap, database);
                 break;
             case 'U':
                 undo_item(database);
                 break;
             case 'E':
-                edit_items(database);
+              edit_items(heap, database);
                 break;
             case 'P':
-                trash = print_items(database);
+              trash = print_items(heap, database);
                 if(trash != NULL) free(trash);
                 break;
         case 'S':
-        save_file(database);
+          save_file(heap, database);
         break;
         case 'L':
-        database = load_file(database);
+          database = load_file(heap, database);
         break;
             case 'X':
                 running = false;
@@ -476,6 +476,8 @@ void event_loop(){
 
 
 int main(){
-    event_loop();
+  heap_t *heap = h_init(4056, true, 0.5);
+  
+    event_loop(heap);
     return 0;
 }

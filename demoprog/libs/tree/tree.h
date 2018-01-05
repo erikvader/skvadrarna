@@ -22,7 +22,7 @@ typedef struct tree tree_t;
 /// \param elem_free (may be NULL) used to free elements in tree_delete, NULL means don't free
 /// \param compare (may be NULL) used to compare keys, NULL means compare as integers
 /// \returns: empty tree
-tree_t *tree_new(element_copy_fun elem_copy, key_copy_fun key_copy, element_free_fun elem_free, key_free_fun key_free, element_comp_fun compare);
+tree_t *tree_new(heap_t *heap, element_copy_fun elem_copy, key_copy_fun key_copy, element_free_fun elem_free, key_free_fun key_free, element_comp_fun compare);
 
 /// Remove a tree along with all elem_t elements.
 ///
@@ -55,7 +55,7 @@ int tree_depth(tree_t *tree);
 /// \param key the key of element to be appended -- this is assumed to be an immutable value
 /// \param elem the element 
 /// \returns: true if successful, else false
-bool tree_insert(tree_t *tree, tree_key_t key, elem_t elem);
+bool tree_insert(heap_t *heap, tree_t *tree, tree_key_t key, elem_t elem);
 
 /// Checks whether a key is used in a tree
 ///
@@ -110,7 +110,7 @@ bool tree_remove(tree_t *tree, tree_key_t key, elem_t *info);
 ///
 /// \param tree pointer to the tree
 /// \returns: array of tree_size() keys on the heap.
-tree_key_t *tree_keys(tree_t *tree);
+tree_key_t *tree_keys(heap_t *heap, tree_t *tree);
 
 /// Returns an array holding all the elements in the tree
 /// in ascending order of their keys (which are not part
@@ -118,7 +118,7 @@ tree_key_t *tree_keys(tree_t *tree);
 ///
 /// \param tree pointer to the tree
 /// \returns: array of tree_size() elements on the heap.
-elem_t *tree_elements(tree_t *tree);
+elem_t *tree_elements(heap_t *heap, tree_t *tree);
 
 /// This function is used in tree_apply() to allow applying a function
 /// to all elements in a tree. 

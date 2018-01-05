@@ -16,14 +16,14 @@ typedef stack_t undo_stack_t;
 undo_stack_t* undo_stack_new();
 
 // records that \p added was added. copies the name of \p added
-void undo_stack_add(undo_stack_t *undo_s, item_t *added);
+void undo_stack_add(heap_t *heap, undo_stack_t *undo_s, item_t *added);
 
 // records that \p copy was changed. Copies \p copy
 // \p new_name is the new name of \p copy if it was changed.
-void undo_stack_edit(undo_stack_t *undo_s, item_t *copy, char *new_name);
+void undo_stack_edit(heap_t *heap, undo_stack_t *undo_s, item_t *copy, char *new_name);
 
 // records that \p removed was removed. Does NOT copy \p removed
-void undo_stack_remove(undo_stack_t *undo_s, item_t *removed);
+void undo_stack_remove(heap_t *heap, undo_stack_t *undo_s, item_t *removed);
 
 // reveals the latest undo.
 // returns true if something could be undone. false if nothing happened

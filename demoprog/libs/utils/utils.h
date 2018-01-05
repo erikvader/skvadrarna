@@ -2,7 +2,7 @@
 #define UTILS_H
 
 #include <stdbool.h>
-
+#include "../common.h"
 typedef union{
    int i;
    float f;
@@ -36,5 +36,5 @@ char ask_question_char(char*);
 
 // trims whitespace
 // returns a pointer to a new string string on the heap
-char* trim(char*);
+char* trim(heap_t *heap, char*);
 #endif

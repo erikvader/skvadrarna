@@ -68,7 +68,7 @@ void db_free(database_t *db);
 /// \param db database to undo the last action on
 /// \param name the name of the thing that got undone. Needs to be freed
 /// \returns ::DB_UNDO_ADD, ::DB_UNDO_EDIT, ::DB_UNDO_REMOVE, ::DB_NOTHING_TO_UNDO
-enum db_error db_undo(database_t *db, char **name);
+enum db_error db_undo(heap_t *heap, database_t *db, char **name);
 
 /// turns recording of undo history on or off
 ///
@@ -126,7 +126,7 @@ bool db_item_exists(const database_t *db, const char *item);
 /// \param item old name of an item to change
 /// \param new_name new name for \p item
 /// \returns ::DB_NO_ERROR if successfull
-enum db_error db_set_item_name(database_t *db, const char *item, const char *new_name);
+enum db_error db_set_item_name(heap_t *heap, database_t *db, const char *item, const char *new_name);
 
 /// change the description for an item
 ///
@@ -141,7 +141,7 @@ enum db_error db_set_item_name(database_t *db, const char *item, const char *new
 /// \param item name of item to modify
 /// \param new_desc new description for \p item
 /// \returns ::DB_NO_ERROR if successfull
-enum db_error db_set_item_desc(database_t *db, const char *item, const char *new_desc);
+enum db_error db_set_item_desc(heap_t *heap, database_t *db, const char *item, const char *new_desc);
 
 /// change the price for an item
 ///
@@ -155,7 +155,7 @@ enum db_error db_set_item_desc(database_t *db, const char *item, const char *new
 /// \param item name of item to modify
 /// \param price new price for \p item
 /// \returns ::DB_NO_ERROR if successfull
-enum db_error db_set_item_price(database_t *db, const char *item, const int new_price);
+enum db_error db_set_item_price(heap_t *heap, database_t *db, const char *item, const int new_price);
 
 /// retrieve the description of an item
 ///
@@ -242,7 +242,7 @@ const char** db_get_all_items(const database_t *db, int *size);
 /// \param item item name to remove from \p db
 /// \returns ::DB_NO_ERROR if successful
 /// \see db_undo
-enum db_error db_remove_item(database_t *db, const char* item);
+enum db_error db_remove_item(heap_t *heap, database_t *db, const char* item);
 
 /// checks if an name is an valid name for an item
 ///

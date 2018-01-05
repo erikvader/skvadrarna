@@ -20,24 +20,24 @@ void ask_name(char **name);
 
 void ask_shelf(char **shelf, int *amount);
 
-void add_item(database_t* database);
+void add_item(heap_t *heap, database_t* database);
 
 void print_shelves(elem_t *shelves, int amount);
 
-void print_product(database_t *database, const char* item);
+void print_product(heap_t *heap, database_t *database, const char* item);
 
 int list_lines_prompt(bool end, int size);
 
 int list_lines(database_t *database, bool end, int length);
 
-char* print_items(database_t *database);
+char* print_items(heap_t *heap, database_t *database);
 
-void edit_items(database_t *database);
+void edit_items(heap_t *heap, database_t *database);
 
-void remove_item(database_t *database);
+void remove_item(heap_t *heap, database_t *database);
 
 void undo_item(database_t *database);
 
-void event_loop();
+void event_loop(heap_t *heap);
 
 #endif //LAGER2_INTERFACE_H

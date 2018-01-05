@@ -20,9 +20,9 @@ int tree_key_compare(elem_t a, elem_t b){
    return strcmp(a.p, b.p);
 }
 
-database_t* db_new(){
-   database_t *new = malloc(sizeof(database_t));
-   new->tree = tree_new(NULL, NULL, delete_item, NULL, tree_key_compare);
+database_t* db_new(heap_t *heap){
+  database_t *new = h_alloc_struct(heap, "**b");
+  new->tree = tree_new(heap, NULL, NULL, delete_item, NULL, tree_key_compare);
    new->undo = undo_stack_new();
    new->undo_enabled = true;
    return new;
@@ -60,7 +60,7 @@ enum db_error db_add_item(heap_t *heap, database_t *db, const char *name, const 
    item_t *new = make_item(heap, strdup(name), strdup(description), price);
    tree_insert(db->tree, key_char_to_elem_t(new->name), item_to_elem_t(new));
 
-   if(db->undo_enabled) undo_stack_add(db->undo, new);
+   if(db->undo_enabled) undo_stack_add(heap, db->undo, new);
 
    return DB_NO_ERROR;
 }
@@ -86,7 +86,7 @@ enum db_error db_item_get_all(const database_t *db, const char *item, const char
    return DB_NO_ERROR;
 }
 
-enum db_error db_set_item_desc(database_t *db, const char *item, const char *new_desc){
+enum db_error db_set_item_desc(heap_t *heap, database_t *db, const char *item, const char *new_desc){
    if(!db_valid_item_name(item)){
       return DB_INVALID_ITEM_NAME;
    }
@@ -94,13 +94,13 @@ enum db_error db_set_item_desc(database_t *db, const char *item, const char *new
    if(!get_item(db, item, &ite)){
       return DB_ITEM_NO_EXIST;
    }
-   if(db->undo_enabled) undo_stack_edit(db->undo, ite, ite->name);
+   if(db->undo_enabled) undo_stack_edit(heap, db->undo, ite, ite->name);
    free(ite->desc);
    ite->desc = strdup(new_desc);
    return DB_NO_ERROR;
 }
 
-enum db_error db_set_item_price(database_t *db, const char *item, const int new_price){
+enum db_error db_set_item_price(heap_t *heap, database_t *db, const char *item, const int new_price){
    if(!db_valid_item_name(item)){
       return DB_INVALID_ITEM_NAME;
    }
@@ -111,12 +111,12 @@ enum db_error db_set_item_price(database_t *db, const char *item, const int new_
    if(!get_item(db, item, &ite)){
       return DB_ITEM_NO_EXIST;
    }
-   if(db->undo_enabled) undo_stack_edit(db->undo, ite, ite->name);
+   if(db->undo_enabled) undo_stack_edit(heap, db->undo, ite, ite->name);
    ite->price = new_price;
    return DB_NO_ERROR;
 }
 
-enum db_error db_set_item_name(database_t *db, const char *item, const char *new_name){
+enum db_error db_set_item_name(heap_t *heap, database_t *db, const char *item, const char *new_name){
    if(!db_valid_item_name(new_name)){
       return DB_INVALID_ITEM_NAME;
    }
@@ -129,7 +129,7 @@ enum db_error db_set_item_name(database_t *db, const char *item, const char *new
    tree_remove(db->tree, key_char_to_elem_t(item), info);
    item_t *removed = info[1].p;
 
-   if(db->undo_enabled) undo_stack_edit(db->undo, info[1].p, (char*) new_name);
+   if(db->undo_enabled) undo_stack_edit(heap, db->undo, info[1].p, (char*) new_name);
    free(removed->name);
    removed->name = strdup(new_name);
 
@@ -146,7 +146,7 @@ bool db_valid_item_name(const char *name){
    return strlen(name) > 0;
 }
 
-enum db_error db_remove_item(database_t *db, const char* item){
+enum db_error db_remove_item(heap_t *heap, database_t *db, const char* item){
    if(!db_valid_item_name(item)){
       return DB_INVALID_ITEM_NAME;
    }
@@ -155,7 +155,7 @@ enum db_error db_remove_item(database_t *db, const char* item){
    if(!success) return DB_ITEM_NO_EXIST;
 
    if(db->undo_enabled){
-      undo_stack_remove(db->undo, info[1].p);
+     undo_stack_remove(heap, db->undo, info[1].p);
    }else{
       delete_item(info[1]);
    }
@@ -235,7 +235,7 @@ enum db_error db_put_item_on_shelf(heap_t *heap, database_t *db, const char *ite
       if(!same_item){
          return DB_SHELF_BUSY;
       }else{
-         if(db->undo_enabled) undo_stack_edit(db->undo, user, user->name);
+        if(db->undo_enabled) undo_stack_edit(heap, db->undo, user, user->name);
          shelf->num += amount;
          return DB_SHELF_ALREADY_EXISTS;
       }
@@ -244,7 +244,7 @@ enum db_error db_put_item_on_shelf(heap_t *heap, database_t *db, const char *ite
       if(!exists){
          return DB_ITEM_NO_EXIST;
       }else{
-         if(db->undo_enabled) undo_stack_edit(db->undo, user, user->name);
+        if(db->undo_enabled) undo_stack_edit(heap, db->undo, user, user->name);
          elem_t new = (elem_t) (void*) make_shelf(strdup(shelf_name), amount);
          list_append(heap, user->shelves, new);
          return DB_NO_ERROR;
@@ -268,7 +268,7 @@ enum db_error db_remove_item_from_shelf(heap_t *heap, database_t *db, const char
       return DB_SHELF_NO_EXIST;
    }
 
-   if(db->undo_enabled) undo_stack_edit(db->undo, item, item->name);
+   if(db->undo_enabled) undo_stack_edit(heap, db->undo, item, item->name);
 
    shelf_point->num -= amount;
 
@@ -313,7 +313,8 @@ enum db_error db_get_shelves(heap_t *heap, const database_t *db, const char *ite
    *amount = list_length(ite->shelves);
    if(*amount == 0) return DB_NO_ERROR;
 
-   *shelves = malloc(sizeof(elem_t) * (*amount));
+   *shelves = h_alloc_struct(heap, "här ska det stå något annat");
+   //*shelves = malloc(sizeof(elem_t) * (*amount));
 
    list_iterator_t *iterator = list_get_iterator(heap, ite->shelves);
    int i = 0;
@@ -337,7 +338,7 @@ const char* db_shelf_get_name(const elem_t shelf){
 //////////////////////////////////// files ////////////////////////////////////
 
 enum db_error db_save(heap_t *heap, const database_t *db, const char *filename){
-   const item_t **items = (const item_t**) tree_elements(db->tree);
+  const item_t **items = (const item_t**) tree_elements(heap, db->tree);
    bool success = db_file_save(heap, items, tree_size(db->tree), filename);
    free(items);
    if(!success) return DB_FILE_ERROR;
@@ -349,9 +350,9 @@ enum db_error db_load(heap_t *heap, database_t **db, const char *filename){
    int items_len;
    bool success = db_file_get(heap, &items, &items_len, filename);
    if(success){
-      *db = db_new();
+     *db = db_new(heap);
       for(int i = 0; i < items_len; i++){
-         tree_insert((*db)->tree, key_char_to_elem_t(items[i]->name), item_to_elem_t(items[i]));
+        tree_insert(heap, (*db)->tree, key_char_to_elem_t(items[i]->name), item_to_elem_t(items[i]));
       }
    }
    free(items);
@@ -365,7 +366,7 @@ void db_undo_enable(database_t *db, bool enable){
    db->undo_enabled = enable;
 }
 
-enum db_error db_undo(database_t *db, char **name){
+enum db_error db_undo(heap_t *heap, database_t *db, char **name){
    enum undo_type type;
    item_t *changed;
    char *changed_name;
@@ -376,7 +377,7 @@ enum db_error db_undo(database_t *db, char **name){
    }
 
    if(type == UNDO_REMOVE){
-      tree_insert(db->tree, key_char_to_elem_t(changed->name), item_to_elem_t(changed));
+     tree_insert(heap, db->tree, key_char_to_elem_t(changed->name), item_to_elem_t(changed));
       *name = strdup(changed->name);
       return DB_UNDO_REMOVE;
    }else if(type == UNDO_ADD){
@@ -391,7 +392,7 @@ enum db_error db_undo(database_t *db, char **name){
       tree_remove(db->tree, key_char_to_elem_t(changed_name), info);
       delete_item(info[1]);
       *name = changed_name;
-      tree_insert(db->tree, key_char_to_elem_t(changed->name), item_to_elem_t(changed));
+      tree_insert(heap, db->tree, key_char_to_elem_t(changed->name), item_to_elem_t(changed));
       return DB_UNDO_EDIT;
    }
 

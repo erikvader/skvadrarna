@@ -111,7 +111,7 @@ char ask_question_char(char *question){
    return (char) ask_question(question, is_one_char, leading_char).i;
 }
 
-char* trim(char* str){
+char* trim(heap_t *heap, char* str){
    int i = 0;
    int b = -1, e = 0;
    while(str[i] != '\0'){
@@ -130,7 +130,7 @@ char* trim(char* str){
    }else{
       newlen = (e-b) + 2;
    }
-   char* r = (char*)malloc(sizeof(char) * newlen);
+   char* r = (char*)h_alloc_data(heap, (sizeof(char) * newlen));
    for(int i = 0; i < newlen-1; i++){
       r[i] = str[b+i];
    }

@@ -21,36 +21,36 @@ undo_stack_t* undo_stack_new(heap_t *heap){
 }
 
 // allocates a new undo_action.
-undo_action_t* undo_make_action(){
-   return malloc(sizeof(undo_action_t));
+undo_action_t* undo_make_action(heap_t *heap){
+  return h_alloc_struct(heap, "***");
 }
 
-void undo_stack_push(undo_stack_t *undo_s, undo_action_t *undo_a){
-   stack_push(undo_s, (elem_t)(void*)undo_a);
+void undo_stack_push(heap_t *heap, undo_stack_t *undo_s, undo_action_t *undo_a){
+  stack_push(heap, undo_s, (elem_t)(void*)undo_a);
 }
 
-void undo_stack_add(undo_stack_t *undo_s, item_t *added){
-   undo_action_t *new = undo_make_action();
+void undo_stack_add(heap_t *heap, undo_stack_t *undo_s, item_t *added){
+   undo_action_t *new = undo_make_action(heap);
    new->type = UNDO_ADD;
    new->changed = NULL;
    new->changed_name = strdup(added->name);
-   undo_stack_push(undo_s, new);
+   undo_stack_push(heap, undo_s, new);
 }
 
-void undo_stack_remove(undo_stack_t *undo_s, item_t *removed){
-   undo_action_t *new = undo_make_action();
+void undo_stack_remove(heap_t *heap, undo_stack_t *undo_s, item_t *removed){
+   undo_action_t *new = undo_make_action(heap);
    new->type = UNDO_REMOVE;
    new->changed = removed;
    new->changed_name = NULL;
-   undo_stack_push(undo_s, new);
+   undo_stack_push(heap, undo_s, new);
 }
 
-void undo_stack_edit(undo_stack_t *undo_s, item_t *copy, char *new_name){
-   undo_action_t *new = undo_make_action();
+void undo_stack_edit(heap_t *heap, undo_stack_t *undo_s, item_t *copy, char *new_name){
+   undo_action_t *new = undo_make_action(heap);
    new->type = UNDO_EDIT;
-   new->changed = copy_item(copy);
+   new->changed = copy_item(heap, copy);
    new->changed_name = strdup(new_name);
-   undo_stack_push(undo_s, new);
+   undo_stack_push(heap, undo_s, new);
 }
 
 // takes the value in 'last_action' and reverts what it did.

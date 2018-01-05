@@ -21,7 +21,7 @@ void delete_item(elem_t item){
 
 //The shelves list_t is allocated but empty.
 item_t* make_item(heap_t *heap, char *name, char *desc, int price){
-   item_t *new = malloc(sizeof(item_t));
+  item_t *new = h_alloc_struct(heap, "**i*");
    new->name = name;
    new->desc = desc;
    new->price = price;
@@ -30,8 +30,8 @@ item_t* make_item(heap_t *heap, char *name, char *desc, int price){
    return new;
 }
 
-shelf_t* make_shelf(char *name, int num){
-   shelf_t *new = malloc(sizeof(shelf_t));
+shelf_t* make_shelf(heap_t *heap, char *name, int num){
+  shelf_t *new = h_alloc_struct(heap, "*i");
    new->name = name;
    new->num = num;
    return new;
@@ -49,13 +49,13 @@ item_t* copy_item(heap_t *heap, item_t *item){
   item_t *copy = make_item(heap, strdup(item->name), strdup(item->desc), item->price);
   list_iterator_t *ite = list_get_iterator(heap, item->shelves);
    while(list_iterator_has_next(ite)){
-      elem_t shelf_c = (elem_t)(void*)copy_shelf((*list_iterator_next(ite)).p);
+     elem_t shelf_c = (elem_t)(void*)copy_shelf(heap, (*list_iterator_next(ite)).p);
       list_append(heap, copy->shelves, shelf_c);
    }
    free(ite);
    return copy;
 }
 
-shelf_t* copy_shelf(shelf_t *s){
-   return make_shelf(strdup(s->name), s->num);
+shelf_t* copy_shelf(heap_t *heap, shelf_t *s){
+  return make_shelf(heap, strdup(s->name), s->num);
 }
