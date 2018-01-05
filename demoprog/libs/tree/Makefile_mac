@@ -1,0 +1,16 @@
+# OBS! Detta är en Makefile-fil för mac!
+
+all: tree_test test coverage
+
+tree_test:
+	clang -Wall --coverage -o tree_test tree_test.c tree.c -lcunit
+
+test: tree_test
+	./tree_test
+
+coverage: test
+	gcov --all-blocks --branch-probabilities --branch-counts tree.c
+
+clean:
+	rm -f tree_test tree.gcda tree_test.gcda tree_test.gcno tree.c.gcov tree.gnco
+

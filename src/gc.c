@@ -79,3 +79,4 @@ size_t h_avail(heap_t *heap) {
 size_t h_used(heap_t *heap) {
   return hm_size_used(heap);
 }
+
