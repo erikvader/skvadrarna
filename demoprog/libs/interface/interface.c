@@ -219,9 +219,9 @@ int list_lines_prompt(bool end, int size){
     }
 }
 
-int list_lines(database_t *database, bool end, int length){
+int list_lines(heap_t *heap, database_t *database, bool end, int length){
 
-    const char **item_names = db_get_all_items(database, &length);
+  const char **item_names = db_get_all_items(heap, database, &length);
 
     char *end_p = "======end of stuff======\n";
     int i = 0;
@@ -263,7 +263,7 @@ int list_lines(database_t *database, bool end, int length){
 
 char* print_items(heap_t *heap, database_t *database){
     int length = 0;
-    const char **item_names = db_get_all_items(database, &length);
+    const char **item_names = db_get_all_items(heap, database, &length);
     int result = 0;
 
     if(length <= 0){
@@ -271,7 +271,7 @@ char* print_items(heap_t *heap, database_t *database){
         return NULL;
     }
     else{
-        result = list_lines(database, false, length);
+      result = list_lines(heap, database, false, length);
         char *ret;
         if(result == -1){
            ret = NULL;
@@ -375,9 +375,9 @@ void remove_item(heap_t *heap, database_t *database){
     }
 }
 
-void undo_item(database_t *database){
+void undo_item(heap_t *heap, database_t *database){
     char *name;
-    enum db_error error_message = db_undo(database, &name);
+    enum db_error error_message = db_undo(heap, database, &name);
 
     if(error_message == DB_NOTHING_TO_UNDO){
         printf("There is nothing to undo!\n");
@@ -449,7 +449,7 @@ void event_loop(heap_t *heap){
               remove_item(heap, database);
                 break;
             case 'U':
-                undo_item(database);
+              undo_item(heap, database);
                 break;
             case 'E':
               edit_items(heap, database);

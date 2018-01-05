@@ -225,7 +225,7 @@ enum db_error db_item_get_all(const database_t *db, const char *item, const char
 /// \param db database to use
 /// \param size pointer to an int where the size will be written
 /// \returns an array with all item names
-const char** db_get_all_items(const database_t *db, int *size);
+const char** db_get_all_items(heap_t *heap, const database_t *db, int *size);
 
 /// removes and item with name \p item from \p db
 ///

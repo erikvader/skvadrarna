@@ -28,7 +28,7 @@ void print_product(heap_t *heap, database_t *database, const char* item);
 
 int list_lines_prompt(bool end, int size);
 
-int list_lines(database_t *database, bool end, int length);
+int list_lines(heap_t *heap, database_t *database, bool end, int length);
 
 char* print_items(heap_t *heap, database_t *database);
 
@@ -36,7 +36,7 @@ void edit_items(heap_t *heap, database_t *database);
 
 void remove_item(heap_t *heap, database_t *database);
 
-void undo_item(database_t *database);
+void undo_item(heap_t *heap, database_t *database);
 
 void event_loop(heap_t *heap);
 

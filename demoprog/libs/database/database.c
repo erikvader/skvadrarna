@@ -58,7 +58,7 @@ enum db_error db_add_item(heap_t *heap, database_t *db, const char *name, const 
    }
 
    item_t *new = make_item(heap, strdup(name), strdup(description), price);
-   tree_insert(db->tree, key_char_to_elem_t(new->name), item_to_elem_t(new));
+   tree_insert(heap, db->tree, key_char_to_elem_t(new->name), item_to_elem_t(new));
 
    if(db->undo_enabled) undo_stack_add(heap, db->undo, new);
 
@@ -133,7 +133,7 @@ enum db_error db_set_item_name(heap_t *heap, database_t *db, const char *item, c
    free(removed->name);
    removed->name = strdup(new_name);
 
-   tree_insert(db->tree, key_char_to_elem_t(removed->name), item_to_elem_t(removed));
+   tree_insert(heap, db->tree, key_char_to_elem_t(removed->name), item_to_elem_t(removed));
 
    return DB_NO_ERROR;
 }
@@ -162,12 +162,12 @@ enum db_error db_remove_item(heap_t *heap, database_t *db, const char* item){
    return DB_NO_ERROR;
 }
 
-const char** db_get_all_items(const database_t *db, int *size){
+const char** db_get_all_items(heap_t *heap, const database_t *db, int *size){
    *size = tree_size(db->tree);
    if(*size == 0){
       return NULL;
    }
-   return (const char**) tree_keys(db->tree); //kanske funkar
+   return (const char**) tree_keys(heap, db->tree); //kanske funkar
 }
 
 bool db_is_valid_shelf_name(const char *name){
@@ -193,7 +193,7 @@ bool db_is_valid_shelf_name(const char *name){
 }
 
 bool get_shelf(heap_t *heap, const database_t *db, const char *shelf_name, item_t **item, shelf_t **shelf){
-   elem_t *elements = tree_elements(db->tree);
+  elem_t *elements = tree_elements(heap, db->tree);
    int size = tree_size(db->tree);
    bool success = false;
    for(int i = 0; i < size; i++){
@@ -245,7 +245,7 @@ enum db_error db_put_item_on_shelf(heap_t *heap, database_t *db, const char *ite
          return DB_ITEM_NO_EXIST;
       }else{
         if(db->undo_enabled) undo_stack_edit(heap, db->undo, user, user->name);
-         elem_t new = (elem_t) (void*) make_shelf(strdup(shelf_name), amount);
+        elem_t new = (elem_t) (void*) make_shelf(heap, strdup(shelf_name), amount);
          list_append(heap, user->shelves, new);
          return DB_NO_ERROR;
       }
