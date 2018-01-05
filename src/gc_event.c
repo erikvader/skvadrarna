@@ -59,19 +59,6 @@ void explore(heap_t *heap, void **obj, bool *unsafe_chunks, bool *locked) {
     }
 }
 
-// find all unsafe chunks
-static
-void mark(heap_t *heap, bool *unsafe_chunks, void **start) {
-
-    while(*start != NULL) {
-        void **next = si_next_pointer(heap, start);
-        if(*next != NULL) {
-            int cur_chunk = hm_get_pointer_chunk(heap, *next);
-            unsafe_chunks[cur_chunk] = true;
-        }
-    }
-}
-
 static
 void init_variable_sized_array(bool *arr, int arr_size, bool init) {
     for(int i = 0; i < arr_size; i++) {
@@ -84,7 +71,7 @@ void gce_run_gc_event(heap_t *heap) {
     int num_chunks = hm_get_amount_chunks(heap);
 
     //starting point for stack searching
-    void *stack_search_start;
+    void **stack_search;
 
     //unsafe
     bool unsafe = hm_is_unsafe(heap);
@@ -93,8 +80,15 @@ void gce_run_gc_event(heap_t *heap) {
 
     //mark all unsafe
     if(unsafe) {
-        stack_search_start = &stack_search_start;
-        mark(heap, unsafe_chunks, &stack_search_start);
+        stack_search = (void **)&stack_search;
+        while(stack_search != NULL) {
+            stack_search = si_next_pointer(heap, stack_search);
+            if(stack_search != NULL) {
+                int cur_chunk = hm_get_pointer_chunk(heap, *stack_search);
+                unsafe_chunks[cur_chunk] = true;
+            }
+        }
+
     }
 
     //get locked chunks
@@ -103,11 +97,11 @@ void gce_run_gc_event(heap_t *heap) {
     hm_get_used_chunks(heap, locked);
 
     //explore
-    stack_search_start = &stack_search_start;
-    while(stack_search_start != NULL) {
-        void **next = si_next_pointer(heap, &stack_search_start);
-        if(*next != NULL) {
-            explore(heap, next, unsafe_chunks, locked);
+    stack_search = (void **)&stack_search;
+    while(stack_search != NULL) {
+        stack_search = si_next_pointer(heap, stack_search);
+        if(stack_search != NULL) {
+            explore(heap, stack_search, unsafe_chunks, locked);
         }
     }
 
