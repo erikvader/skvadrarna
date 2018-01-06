@@ -34,43 +34,43 @@ void test_hm_get_amount_chunks() {
     }
 }
 
-void test_reserve_space() {
+void test_get_free_space() {
     //Allocates all heap space.
     int n_chunks = 10;
     size_t test_size = CHUNK_SIZE / 4;
     HEAP_INIT(n_chunks, 1);
     for(int i = 0; i < 4 * n_chunks; i++) {
-        CU_ASSERT_TRUE(hm_reserve_space(heap, test_size) != NULL);
+        CU_ASSERT_TRUE(hm_get_free_space(heap, test_size) != NULL);
     }
-    CU_ASSERT_EQUAL(hm_reserve_space(heap, test_size), NULL);
+    CU_ASSERT_EQUAL(hm_get_free_space(heap, test_size), NULL);
 }
 
-void test_reserve_space2() {
+void test_get_free_space2() {
     //tests what happens when u reserve space of size 0
     size_t empty_object = 0;
     int n_chunks = 10;
     HEAP_INIT(n_chunks, 1);
-    CU_ASSERT_EQUAL(hm_reserve_space(heap, empty_object), NULL);
+    CU_ASSERT_EQUAL(hm_get_free_space(heap, empty_object), NULL);
 }
 
-void test_reserve_space3() {
+void test_get_free_space3() {
     //Reserving space larger than Chunk_size.
     size_t too_big_object = CHUNK_SIZE + 1;
     int n_chunks = 10;
     HEAP_INIT(n_chunks, 1);
-    CU_ASSERT_EQUAL(hm_reserve_space(heap, too_big_object), NULL);
+    CU_ASSERT_EQUAL(hm_get_free_space(heap, too_big_object), NULL);
 }
 
-void test_reserve_space4() {
+void test_get_free_space4() {
     // Checking alignment of allocated objects
     size_t obj_size = CHUNK_SIZE/4;
     int n_chunks = 2;
     HEAP_INIT(n_chunks, 1);
-    CU_ASSERT_TRUE((uintptr_t) hm_reserve_space(heap, obj_size) % ALIGNMENT == 0);
-    CU_ASSERT_TRUE((uintptr_t) hm_reserve_space(heap, obj_size-1) % ALIGNMENT == 0);
-    CU_ASSERT_TRUE((uintptr_t) hm_reserve_space(heap, obj_size-2) % ALIGNMENT == 0);
-    CU_ASSERT_TRUE((uintptr_t) hm_reserve_space(heap, obj_size-3) % ALIGNMENT == 0);
-    CU_ASSERT_TRUE((uintptr_t) hm_reserve_space(heap, obj_size) % ALIGNMENT == 0);
+    CU_ASSERT_TRUE((uintptr_t) hm_get_free_space(heap, obj_size) % ALIGNMENT == 0);
+    CU_ASSERT_TRUE((uintptr_t) hm_get_free_space(heap, obj_size-1) % ALIGNMENT == 0);
+    CU_ASSERT_TRUE((uintptr_t) hm_get_free_space(heap, obj_size-2) % ALIGNMENT == 0);
+    CU_ASSERT_TRUE((uintptr_t) hm_get_free_space(heap, obj_size-3) % ALIGNMENT == 0);
+    CU_ASSERT_TRUE((uintptr_t) hm_get_free_space(heap, obj_size) % ALIGNMENT == 0);
 }
 
 
@@ -101,9 +101,9 @@ void test_hm_over_threshold() {
     size_t chunk_object = CHUNK_SIZE;
     int n_chunks = 5;
     HEAP_INIT(n_chunks, 0.5);
-    hm_reserve_space(heap, chunk_object);
-    hm_reserve_space(heap, chunk_object);
-    hm_reserve_space(heap, chunk_object);
+    hm_get_free_space(heap, chunk_object);
+    hm_get_free_space(heap, chunk_object);
+    hm_get_free_space(heap, chunk_object);
     CU_ASSERT_TRUE(hm_over_threshold(heap) == true);
 }
 
@@ -112,8 +112,8 @@ void test_hm_under_threshold() {
     size_t object = 100;
     int n_chunks = 5;
     HEAP_INIT(n_chunks, 0.5);
-    hm_reserve_space(heap, object);
-    hm_reserve_space(heap, object);
+    hm_get_free_space(heap, object);
+    hm_get_free_space(heap, object);
     CU_ASSERT_TRUE(hm_over_threshold(heap) != true);
 }
 
@@ -124,7 +124,7 @@ void test_hm_size_available1() {
     size_t object = 0;
     int n_chunks = 5;
     HEAP_INIT(n_chunks, 1);
-    hm_reserve_space(heap, object);
+    hm_get_free_space(heap, object);
     CU_ASSERT_EQUAL(hm_size_available(heap), n_chunks * CHUNK_SIZE);
 }
 
@@ -132,7 +132,7 @@ void test_hm_size_available2() {
     size_t object = CHUNK_SIZE;
     int n_chunks = 5;
     HEAP_INIT(n_chunks, 1);
-    hm_reserve_space(heap, object);
+    hm_get_free_space(heap, object);
     CU_ASSERT_EQUAL(hm_size_available(heap), CHUNK_SIZE * (n_chunks - 1));
 }
 
@@ -140,11 +140,11 @@ void test_hm_size_available3() {
     size_t object = CHUNK_SIZE;
     int n_chunks = 5;
     HEAP_INIT(n_chunks, 1);
-    hm_reserve_space(heap, object);
-    hm_reserve_space(heap, object);
-    hm_reserve_space(heap, object);
-    hm_reserve_space(heap, object);
-    hm_reserve_space(heap, object);
+    hm_get_free_space(heap, object);
+    hm_get_free_space(heap, object);
+    hm_get_free_space(heap, object);
+    hm_get_free_space(heap, object);
+    hm_get_free_space(heap, object);
     CU_ASSERT_EQUAL(hm_size_available(heap), 0);
 }
 
@@ -152,7 +152,7 @@ void test_hm_size_used1() {
     size_t object = 0;
     int n_chunks = 5;
     HEAP_INIT(n_chunks, 1);
-    hm_reserve_space(heap, object);
+    hm_get_free_space(heap, object);
     CU_ASSERT_EQUAL(hm_size_used(heap), 0);
 }
 
@@ -160,7 +160,7 @@ void test_hm_size_used2() {
     size_t object = CHUNK_SIZE;
     int n_chunks = 5;
     HEAP_INIT(n_chunks, 1);
-    hm_reserve_space(heap, object);
+    hm_get_free_space(heap, object);
     CU_ASSERT_EQUAL(hm_size_used(heap), CHUNK_SIZE);
 }
 
@@ -168,11 +168,11 @@ void test_hm_size_used3() {
     size_t object = CHUNK_SIZE - 1;
     int n_chunks = 5;
     HEAP_INIT(n_chunks, 1);
-    hm_reserve_space(heap, object);
-    hm_reserve_space(heap, object);
-    hm_reserve_space(heap, object);
-    hm_reserve_space(heap, object);
-    hm_reserve_space(heap, object);
+    hm_get_free_space(heap, object);
+    hm_get_free_space(heap, object);
+    hm_get_free_space(heap, object);
+    hm_get_free_space(heap, object);
+    hm_get_free_space(heap, object);
     CU_ASSERT_TRUE(hm_size_used(heap) >= object * 5); // We can't know exact value, since the objects might be padded for alignment
 }
 
@@ -180,7 +180,7 @@ void test_hm_pointer_exists1() {
     size_t object = CHUNK_SIZE;
     int n_chunks = 5;
     HEAP_INIT(n_chunks, 1);
-    void *test_pointer = hm_reserve_space(heap, object);
+    void *test_pointer = hm_get_free_space(heap, object);
     CU_ASSERT_TRUE(hm_pointer_exists(heap, test_pointer) == true);
     CU_ASSERT_TRUE(hm_pointer_exists(heap, test_pointer - 1) == false);
     CU_ASSERT_TRUE(hm_pointer_exists(heap, test_pointer + 1) == false);
@@ -236,14 +236,14 @@ void test_hm_reset_chunk1() {
     HEAP_INIT(n_chunks, 1);
 
     for(int n = 0; n < n_chunks; n++) {
-        hm_reserve_space(heap, CHUNK_SIZE); //alloc all available space
+        hm_get_free_space(heap, CHUNK_SIZE); //alloc all available space
     }
 
     for(int n = 0; n < n_chunks; n++) {
-        void *allocd = hm_reserve_space(heap, 1);
+        void *allocd = hm_get_free_space(heap, 1);
         CU_ASSERT_TRUE(allocd == NULL);
         hm_reset_chunk(heap, n);
-        allocd = hm_reserve_space(heap, CHUNK_SIZE);
+        allocd = hm_get_free_space(heap, CHUNK_SIZE);
         chunk_t chunk = hm_get_pointer_chunk(heap, allocd);
         CU_ASSERT_TRUE(chunk == n);
     }
@@ -254,8 +254,8 @@ void test_hm_reset_chunk2() {
     HEAP_INIT(1, 1);
     size_t obj1 = 153;
     size_t obj2 = 2;
-    void *alloc1 = hm_reserve_space(heap, obj1);
-    void *alloc2 = hm_reserve_space(heap, obj2);
+    void *alloc1 = hm_get_free_space(heap, obj1);
+    void *alloc2 = hm_get_free_space(heap, obj2);
     CU_ASSERT_TRUE(hm_pointer_exists(heap, alloc1));
     CU_ASSERT_TRUE(hm_pointer_exists(heap, alloc2));
     hm_reset_chunk(heap, 0);
@@ -288,10 +288,10 @@ void add_hm_test_suites() {
     CU_pSuite allocSuite = CU_add_suite("Heap metadata allocation", NULL, NULL);
     CU_ADD_TEST(allocSuite, test_hm_reset_chunk1);
     CU_ADD_TEST(allocSuite, test_hm_reset_chunk2);
-    CU_ADD_TEST(allocSuite, test_reserve_space);
-    CU_ADD_TEST(allocSuite, test_reserve_space2);
-    CU_ADD_TEST(allocSuite, test_reserve_space3);
-    CU_ADD_TEST(allocSuite, test_reserve_space4);
+    CU_ADD_TEST(allocSuite, test_get_free_space);
+    CU_ADD_TEST(allocSuite, test_get_free_space2);
+    CU_ADD_TEST(allocSuite, test_get_free_space3);
+    CU_ADD_TEST(allocSuite, test_get_free_space4);
     CU_ADD_TEST(allocSuite, test_alloc_spec_chunk1);
     CU_ADD_TEST(allocSuite, test_alloc_spec_chunk2);
 

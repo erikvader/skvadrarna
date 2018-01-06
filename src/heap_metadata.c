@@ -119,14 +119,14 @@ size_t hm_measure_header_size(size_t heap_siz) {
 /*
  * Allocation/deallocation functions
  */
-size_t chunk_get_free_space(heap_t *heap, chunk_t chunk) {
+size_t chunk_calc_avail_space(heap_t *heap, chunk_t chunk) {
     heap_header_t *header = (heap_header_t *) heap;
     void *chunk_start = header->chunks_start + header->chunk_siz * chunk;
     size_t used_space = header->free_pointers[chunk] - chunk_start;
     return header->chunk_siz - used_space;
 }
 
-void *hm_reserve_space(heap_t *heap, size_t obj_siz) { //TODO: Must work with mutiple objects in same chunk.
+void *hm_get_free_space(heap_t *heap, size_t obj_siz) { //TODO: Must work with mutiple objects in same chunk.
     int n_chunks = hm_get_amount_chunks(heap);
     bool banned_chunks[n_chunks];
     memset(banned_chunks, false, n_chunks);
@@ -146,7 +146,7 @@ void *hm_alloc_spec_chunk(heap_t *heap, size_t obj_siz, bool *ban) {
     heap_header_t *head = (heap_header_t *) heap; //So we're able to use header metadata
     void *free_space = head->chunks_start;
     for(int i = 0; i < hm_get_amount_chunks(heap); i++) {
-        if(chunk_get_free_space(heap, i) >= obj_siz && !ban[i]) {
+        if(chunk_calc_avail_space(heap, i) >= obj_siz && !ban[i]) {
             void *allocated = head->free_pointers[i];
             set_addr_allocated(heap, allocated, true);
             head->free_pointers[i] += obj_siz;
@@ -187,7 +187,7 @@ bool hm_over_threshold(heap_t *heap) {
 size_t hm_size_available(heap_t *heap) { //
     size_t free_space = 0;
     for(int i = 0; i < hm_get_amount_chunks(heap); i ++) {
-        free_space += chunk_get_free_space(heap, i);
+        free_space += chunk_calc_avail_space(heap, i);
     }
     return free_space;
 }
@@ -203,7 +203,7 @@ void hm_get_used_chunks(heap_t *heap, bool *data) {
     assert(heap && data);
     int n_chunks = hm_get_amount_chunks(heap);
     for(int i = 0; i < n_chunks; i++) {
-        data[i] = chunk_get_free_space(heap, i) < CHUNK_SIZE;
+        data[i] = chunk_calc_avail_space(heap, i) < CHUNK_SIZE;
     }
 }
 
