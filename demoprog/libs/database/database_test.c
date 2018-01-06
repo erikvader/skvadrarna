@@ -257,8 +257,6 @@ void test_iterate_shelf(){
    CU_ASSERT_TRUE(db_shelf_get_amount(shelves[1]) == 22);
    CU_ASSERT_TRUE(strcmp(db_shelf_get_name(shelves[1]), "A26") == 0);
 
-   free(shelves);
-
    err = db_get_shelves(db, "brödrost", &shelves, &num);
    CU_ASSERT_EQUAL(DB_NO_ERROR, err);
    CU_ASSERT_EQUAL(num, 0);
@@ -298,8 +296,7 @@ void test_add_undo(){
    CU_ASSERT_EQUAL(err, DB_UNDO_ADD);
    CU_ASSERT_TRUE(strcmp(name, "ost") == 0);
    CU_ASSERT_FALSE(db_item_exists(db, "ost"));
-   free(name);
-
+   
    err = db_undo(db, &name);
    CU_ASSERT_EQUAL(err, DB_NOTHING_TO_UNDO);
 
@@ -310,14 +307,12 @@ void test_add_undo(){
    CU_ASSERT_EQUAL(err, DB_UNDO_ADD);
    CU_ASSERT_TRUE(strcmp(name, "ostost") == 0);
    CU_ASSERT_FALSE(db_item_exists(db, "ostost"));
-   free(name);
-
+   
    err = db_undo(db, &name);
    CU_ASSERT_EQUAL(err, DB_UNDO_ADD);
    CU_ASSERT_TRUE(strcmp(name, "ost") == 0);
    CU_ASSERT_FALSE(db_item_exists(db, "ost"));
-   free(name);
-
+   
    err = db_undo(db, &name);
    CU_ASSERT_EQUAL(err, DB_NOTHING_TO_UNDO);
 
@@ -337,7 +332,6 @@ void test_undo_remove(){
    CU_ASSERT_EQUAL(DB_UNDO_REMOVE, err);
    CU_ASSERT_TRUE(strcmp(name, "ost") == 0);
    CU_ASSERT_TRUE(db_item_exists(db, "ost"));
-   free(name);
 }
 
 void test_undo_edit(){
@@ -350,8 +344,7 @@ void test_undo_edit(){
    CU_ASSERT_EQUAL(DB_UNDO_EDIT, err);
    CU_ASSERT_TRUE(strcmp(name, "OOOSSSTTT") == 0);
    CU_ASSERT_TRUE(db_item_exists(db, "ost"));
-   free(name);
-
+   
    db_set_item_desc(db, "ost", "ojojoj");
    err = db_undo(db, &name);
    CU_ASSERT_EQUAL(DB_UNDO_EDIT, err);
@@ -359,8 +352,7 @@ void test_undo_edit(){
    const char *desc;
    db_get_item_desc(db, "ost", &desc);
    CU_ASSERT_TRUE(strcmp(desc, "ostar") == 0);
-   free(name);
-
+   
    db_set_item_price(db, "ost", 123);
    err = db_undo(db, &name);
    CU_ASSERT_EQUAL(DB_UNDO_EDIT, err);
@@ -368,7 +360,6 @@ void test_undo_edit(){
    int p;
    db_get_item_price(db, "ost", &p);
    CU_ASSERT_TRUE(p == 22);
-   free(name);
 }
 
 int main(){

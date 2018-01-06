@@ -13,7 +13,6 @@ struct undo_action{
 void undo_free_action(undo_action_t *undo_a){
    if(undo_a->changed != NULL) delete_item(item_to_elem_t(undo_a->changed));
    if(undo_a->changed_name != NULL) free(undo_a->changed_name);
-   free(undo_a);
 }
 
 undo_stack_t* undo_stack_new(heap_t *heap){
@@ -67,8 +66,6 @@ bool undo_stack_undo(undo_stack_t *undo_s, item_t **changed, enum undo_type *typ
    *changed = popped->changed;
    *type = popped->type;
    *changed_name = popped->changed_name;
-   free(popped);
-
    return true;
 }
 

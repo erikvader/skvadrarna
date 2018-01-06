@@ -153,7 +153,6 @@ void test_tree_keys(void)
       CU_ASSERT_TRUE(lista[i].i == TEST_VALUES[i]);
    }
 
-   free(lista);
    tree_delete(t, false, false);
 }
 
@@ -172,7 +171,6 @@ void test_tree_elements(void)
    {
       CU_ASSERT_TRUE(elemen[i].i == TEST_VALUES[i]);
    }
-   free(elemen);
    tree_delete(t, false, false);
 }
 

@@ -6,17 +6,12 @@
 //frees a shelf
 void delete_shelf(elem_t s){
    shelf_t *shelf = s.p;
-   free(shelf->name);
-   free(shelf);
 }
 
 // Frees everything in the item_t item
 void delete_item(elem_t item){
    item_t *itemp = item.p;
-   free(itemp->name);
-   free(itemp->desc);
    list_delete(itemp->shelves, true);
-   free(itemp);
 }
 
 //The shelves list_t is allocated but empty.
@@ -52,7 +47,6 @@ item_t* copy_item(heap_t *heap, item_t *item){
      elem_t shelf_c = (elem_t)(void*)copy_shelf(heap, (*list_iterator_next(ite)).p);
       list_append(heap, copy->shelves, shelf_c);
    }
-   free(ite);
    return copy;
 }
 

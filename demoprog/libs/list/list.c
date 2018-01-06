@@ -37,7 +37,7 @@ int default_compare(elem_t elem1, elem_t elem2){
 }
 
 list_t *list_new(heap_t *heap, element_copy_fun copy, element_free_fun free, element_comp_fun compare){
-  list_t *newList = h_alloc_struct(heap, "*i***");
+  list_t *newList = h_alloc_struct(heap, "*i8c8c8c");
 
     if(newList != NULL){
         newList->first = NULL;
@@ -135,7 +135,6 @@ void list_remove(list_t *list, int index, bool delete){
         list->last = prev;
     }
     if(delete) list->elem_free(removed->value);
-    free(removed);
     list->length--;
 
 }
@@ -187,7 +186,6 @@ void list_delete(list_t *list, bool delete){
     for(int i = 0; i < list_length; i++){
         list_remove(list, 0, delete);
     }
-    free(list);
 }
 
 bool list_apply(list_t *list, elem_apply_fun fun, void *data){

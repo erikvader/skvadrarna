@@ -45,7 +45,7 @@ int default_compare(elem_t a, elem_t b){
 }
 
 tree_t *tree_new(heap_t *heap, element_copy_fun elem_copy, key_copy_fun key_copy, element_free_fun elem_free, key_free_fun key_free, element_comp_fun compare){
-  tree_t *new = h_alloc_struct(heap, "**8c8c8c8c");
+  tree_t *new = h_alloc_struct(heap, "*8c8c8c8c8c");
 
    if (new != NULL){
       new->root = NULL;
@@ -83,14 +83,12 @@ void tree_node_delete(tree_t *tree, tree_node *node, bool dk, bool de){
    if (dk) tree->key_free(node->key);
    if (de) tree->ele_free(node->data);
 
-   free(node);
 }
 
 void tree_delete(tree_t* tree, bool delete_keys, bool delete_elements){
    if(tree->root != NULL){
       tree_node_delete(tree, tree->root, delete_keys, delete_elements);
    }
-   free(tree);
 }
 
 bool tree_empty(tree_t* t){
@@ -420,7 +418,6 @@ bool tree_remove(tree_t* tree, tree_key_t key, elem_t *info){
       info[0] = d->key;
       info[1] = d->data;
    }
-   free(d);
    return true;
 }
 

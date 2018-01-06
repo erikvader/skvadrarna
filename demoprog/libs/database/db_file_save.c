@@ -29,7 +29,6 @@ void save_list(heap_t *heap, blk_file bf, list_t *list){
       shelf_t *she = (*list_iterator_next(ite)).p;
       save_shelf(bf, she);
    }
-   free(ite);
 }
 
 void save_item(heap_t *heap, blk_file bf, const item_t *item){

@@ -255,7 +255,6 @@ elem_t list_s_dup(elem_t e){
 }
 
 void list_s_free(elem_t e){
-   free(e.p);
 }
 
 int list_s_cmp(elem_t a, elem_t b){

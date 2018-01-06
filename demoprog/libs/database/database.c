@@ -31,7 +31,6 @@ database_t* db_new(heap_t *heap){
 void db_free(database_t *db){
    tree_delete(db->tree, false, true);
    undo_stack_delete(db->undo);
-   free(db);
 }
 
 bool get_item(const database_t *db, const char *item_name, item_t **item){
@@ -95,7 +94,6 @@ enum db_error db_set_item_desc(heap_t *heap, database_t *db, const char *item, c
       return DB_ITEM_NO_EXIST;
    }
    if(db->undo_enabled) undo_stack_edit(heap, db->undo, ite, ite->name);
-   free(ite->desc);
    ite->desc = strdup(new_desc);
    return DB_NO_ERROR;
 }
@@ -130,7 +128,6 @@ enum db_error db_set_item_name(heap_t *heap, database_t *db, const char *item, c
    item_t *removed = info[1].p;
 
    if(db->undo_enabled) undo_stack_edit(heap, db->undo, info[1].p, (char*) new_name);
-   free(removed->name);
    removed->name = strdup(new_name);
 
    tree_insert(heap, db->tree, key_char_to_elem_t(removed->name), item_to_elem_t(removed));
@@ -209,9 +206,7 @@ bool get_shelf(heap_t *heap, const database_t *db, const char *shelf_name, item_
             break;
          }
       }
-      free(ite);
    }
-   free(elements);
    return success;
 }
 
@@ -281,7 +276,6 @@ enum db_error db_remove_item_from_shelf(heap_t *heap, database_t *db, const char
          }
          i++;
       }
-      free(ite);
       list_remove(item->shelves, i, true); //borde ha hittat grejen
    }
 
@@ -322,8 +316,6 @@ enum db_error db_get_shelves(heap_t *heap, const database_t *db, const char *ite
       (*shelves)[i] = *list_iterator_next(iterator);
       i++;
    }
-   free(iterator);
-
    return DB_NO_ERROR;
 }
 
@@ -340,7 +332,6 @@ const char* db_shelf_get_name(const elem_t shelf){
 enum db_error db_save(heap_t *heap, const database_t *db, const char *filename){
   const item_t **items = (const item_t**) tree_elements(heap, db->tree);
    bool success = db_file_save(heap, items, tree_size(db->tree), filename);
-   free(items);
    if(!success) return DB_FILE_ERROR;
    return DB_NO_ERROR;
 }
@@ -355,7 +346,6 @@ enum db_error db_load(heap_t *heap, database_t **db, const char *filename){
         tree_insert(heap, (*db)->tree, key_char_to_elem_t(items[i]->name), item_to_elem_t(items[i]));
       }
    }
-   free(items);
    if(!success) return DB_FILE_ERROR;
    else return DB_NO_ERROR;
 }
@@ -384,7 +374,6 @@ enum db_error db_undo(heap_t *heap, database_t *db, char **name){
       elem_t info[2];
       tree_remove(db->tree, key_char_to_elem_t(changed_name), info);
       *name = strdup(changed_name);
-      free(changed_name);
       delete_item(info[1]);
       return DB_UNDO_ADD;
    }else if(type == UNDO_EDIT){
