@@ -63,14 +63,27 @@ void *align_pointer(void *pointer) {
     return (void *) pval + OBJECT_ALIGNMENT;
 }
 
+// Calculates where the first chunk should start (i.e. where the header should end)
+void* get_chunks_start(heap_t *header_start, size_t total_size) {
+    void *heap_end = (void *) header_start + total_size;
+    total_size -= sizeof(heap_header_t);
+    int n_chunks = total_size / CHUNK_SIZE;
 
-// Initializes a heap_header_t struct and two arrays in the memory pointed to by heap
+    void *chunks_start;
+    do {
+        size_t alloc_map_size = sizeof(bitarr_t) * n_chunks * CHUNK_SIZE / OBJECT_ALIGNMENT;
+        chunks_start = (void *) header_start + sizeof(heap_header_t) + sizeof(void *) * n_chunks + alloc_map_size;
+        chunks_start = align_pointer(chunks_start);
+        n_chunks--;
+    } while (chunks_start + n_chunks * CHUNK_SIZE > heap_end);
+    return chunks_start;
+}
+
 void hm_init(heap_t *heap, size_t size, bool unsafe_stack, float gc_threshold) {
     heap_header_t *head = (heap_header_t *) heap;
-    void *unaligned_heap_start = ((void *)heap) + hm_measure_header_size(size);
-    head -> chunks_start = align_pointer(unaligned_heap_start);
+    head -> chunks_start = get_chunks_start(heap, size);
 
-    size_t available_space = unaligned_heap_start + size - head->chunks_start;
+    size_t available_space = (void *) heap + size - head->chunks_start;
     head -> heap_siz = available_space / CHUNK_SIZE * CHUNK_SIZE; // Rounds down to whole chunks
     head -> chunk_siz = CHUNK_SIZE;
     head -> unsafe_stack = unsafe_stack;
@@ -87,7 +100,7 @@ void hm_init(heap_t *heap, size_t size, bool unsafe_stack, float gc_threshold) {
     }
 }
 
-size_t hm_measure_required_space(size_t heap_siz) {
+size_t hm_measure_header_size(size_t heap_siz) {
     int n_chunks = heap_siz / CHUNK_SIZE;
     size_t struct_size = sizeof(heap_header_t);
     size_t free_pointer_arr_size = sizeof(void *) * n_chunks;
