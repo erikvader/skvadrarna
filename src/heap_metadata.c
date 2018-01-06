@@ -4,11 +4,12 @@
 #include <assert.h>
 #include "include/heap_metadata.h"
 
+// Note that many functions in this file are written heavily under the assumption that CHUNK_SIZE is divisible by OBJECT_ALIGNMENT
 #define CHUNK_SIZE 2048
 #define MIN_OBJ_SIZE 16
 #define OBJECT_ALIGNMENT MIN_OBJ_SIZE
 
-typedef bool bitarr_t;
+typedef uint8_t bitarr_t;
 
 /*
  * The metadata consists of this struct and two arrays containing allocation data.
@@ -37,8 +38,11 @@ typedef struct heap_header {
 
 void set_addr_allocated(heap_t *heap, void *addr, bool allocated) {
     heap_header_t *head = (heap_header_t *) heap;
-    size_t index = (addr - head -> chunks_start) / OBJECT_ALIGNMENT;
-    head -> alloc_map[index] = allocated;
+    int index = (addr - head -> chunks_start) / OBJECT_ALIGNMENT;
+    int byte_index = index / 8;
+    int bit_index = index % 8;
+    head->alloc_map[byte_index] &= ~(1 << bit_index);
+    head->alloc_map[byte_index] |= (allocated << bit_index);
 }
 
 
@@ -46,7 +50,10 @@ void set_addr_allocated(heap_t *heap, void *addr, bool allocated) {
 bool get_addr_allocated(heap_t *heap, void *addr) {
     heap_header_t *head = (heap_header_t *) heap;
     size_t index = (addr - head -> chunks_start) / OBJECT_ALIGNMENT;
-    return head -> alloc_map[index];
+    int byte_index = index / 8;
+    int bit_index = index % 8;
+    uint8_t byte = head -> alloc_map[byte_index];
+    return byte & (1 << bit_index);
 }
 
 
@@ -71,7 +78,7 @@ void* get_chunks_start(heap_t *header_start, size_t total_size) {
 
     void *chunks_start;
     do {
-        size_t alloc_map_size = sizeof(bitarr_t) * n_chunks * CHUNK_SIZE / OBJECT_ALIGNMENT;
+        size_t alloc_map_size = (n_chunks * CHUNK_SIZE / OBJECT_ALIGNMENT) * sizeof(bitarr_t) / 8;
         chunks_start = (void *) header_start + sizeof(heap_header_t) + sizeof(void *) * n_chunks + alloc_map_size;
         chunks_start = align_pointer(chunks_start);
         n_chunks--;
@@ -104,7 +111,7 @@ size_t hm_measure_header_size(size_t heap_siz) {
     int n_chunks = heap_siz / CHUNK_SIZE;
     size_t struct_size = sizeof(heap_header_t);
     size_t free_pointer_arr_size = sizeof(void *) * n_chunks;
-    size_t alloc_map_size = (n_chunks * CHUNK_SIZE / OBJECT_ALIGNMENT) * sizeof(bitarr_t);
+    size_t alloc_map_size = (n_chunks * CHUNK_SIZE / OBJECT_ALIGNMENT) * sizeof(bitarr_t) / 8;
     return struct_size + free_pointer_arr_size + alloc_map_size;
 }
 
