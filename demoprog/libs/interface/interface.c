@@ -180,7 +180,6 @@ void print_product(heap_t *heap, database_t *database, const char* item){
     int amount = 0;
     db_get_shelves(heap, database, item, &shelves, &amount);
     print_shelves(shelves, amount);
-    if(amount > 0)
 }
 
 int list_lines_prompt(bool end, int size){
