@@ -71,7 +71,7 @@ void init_variable_sized_array(bool *arr, int arr_size, bool init) {
     }
 }
 
-void gce_run_gc_event(heap_t *heap) {
+void gce_run_gc_event_dbg(heap_t *heap, bool unsafe) {
 
     int num_chunks = hm_get_amount_chunks(heap);
 
@@ -79,7 +79,6 @@ void gce_run_gc_event(heap_t *heap) {
     void **stack_search;
 
     //unsafe
-    bool unsafe = hm_is_unsafe(heap);
     bool unsafe_chunks[num_chunks];
     init_variable_sized_array(unsafe_chunks, false, num_chunks);
 
@@ -121,3 +120,6 @@ void gce_run_gc_event(heap_t *heap) {
 
 }
 
+void gce_run_gc_event(heap_t *heap) {
+    gce_run_gc_event_dbg(heap, hm_is_unsafe(heap));
+}

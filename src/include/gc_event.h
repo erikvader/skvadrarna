@@ -21,4 +21,11 @@
 /// \param heap the heap to run on
 void gce_run_gc_event(heap_t *heap);
 
+/// runs the GC cleanup process with the option to temporarily change the value of unsafe_stack
+///
+/// \param heap the heap to run on
+/// \param unsafe temporary value for unsafe_stack
+/// \see gce_run_gc_event()
+void gce_run_gc_event_dbg(heap_t *heap, bool unsafe);
+
 #endif
