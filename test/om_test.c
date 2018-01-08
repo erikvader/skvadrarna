@@ -1,11 +1,13 @@
 #include <stdio.h>
-#include "../include/object_metadata.h"
 #include <stdint.h>
 #include <inttypes.h>
 #include <assert.h>
 #include <malloc.h>
 #include <string.h>
 #include <stdbool.h>
+#include "include/heap_metadata.h"
+#include "include/object_metadata.h"
+#include "om_test.h"
 
 static char *format;
 static void *object;
@@ -13,18 +15,21 @@ static size_t true_size;
 static uint64_t data;
 static int no_pointers;
 static int *pointers;
+static heap_t *heap;
 /* The suite initialization function.
  * Opens the temporary file used by the tests.
  * Returns zero on success, non-zero otherwise.
  */
 int init(void) {
     object = calloc(101, sizeof(void *)) + sizeof(void *);
+    heap = malloc(4096);
+    hm_init(heap, 4096, false, 1);
     uint64_t *number = object;
     for(int i = 1; i <= 100; ++i) {
         number[i - 1] = i;
     }
 
-    om_build(NULL, object, format);
+    om_build(heap, object, format);
     return 0;
 }
 
@@ -34,6 +39,7 @@ int init(void) {
  */
 int clean(void) {
     free(object - sizeof(void *));
+    free(heap);
     return 0;
 }
 
@@ -79,13 +85,13 @@ bool test_pointers(void) {
 }
 bool test_explored() {
     bool returnvalue = true;
-    if(om_is_explored(object)) {
+    if(om_get_explored(heap, object)) {
         returnvalue = false;
         printf("Error: explored as default");
 
     }
-    om_toggle_explored(object);
-    if(!om_is_explored(object)) {
+    om_set_explored(heap, object);
+    if(!om_get_explored(heap, object)) {
         returnvalue = false;
         printf("Error: explored not after toggle");
     }
@@ -93,8 +99,8 @@ bool test_explored() {
         returnvalue = false;
         printf("Error: size doesnt work after explored.");
     }
-    om_toggle_explored(object);
-    if(om_is_explored(object)) {
+    hm_toggle_explored_bit(heap);
+    if(om_get_explored(heap, object)) {
         returnvalue = false;
         printf("Error: explored after double toggle");
     }
@@ -153,7 +159,7 @@ bool test_redirect() {
  * Returns a CUE_SUCCESS on successful running, another
  * CUnit error code on failure.
  */
-int main(void) {
+int run_om_test(void) {
 
 
     FILE *fp = fopen("om_testdata.txt", "r");
