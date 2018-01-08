@@ -14,7 +14,6 @@ int main(int argc, char **argv) {
     add_gc_test_suites();
     add_hm_test_suites();
 
-
     CU_basic_run_tests();
     CU_cleanup_registry();
     return CU_get_error();
