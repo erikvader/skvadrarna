@@ -107,5 +107,6 @@ void hm_reset_chunk(heap_t *heap, chunk_t index);
 /// \param data the array to write the data to
 void hm_get_used_chunks(heap_t *heap, bool *data);
 
+bool hm_is_unsafe(heap_t *heap);
 
 #endif

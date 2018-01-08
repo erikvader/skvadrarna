@@ -51,25 +51,19 @@ void *h_alloc_data(heap_t *heap, size_t bytes) {
 }
 
 size_t h_gc(heap_t *heap) {
-  size_t before = h_used(heap);
-
-  gce_run_gc_event(heap);
-
-  size_t after = h_used(heap);
-
-  return before - after;
+    return h_gc_dbg(heap, hm_is_unsafe(heap));
 }
 
 
 size_t h_gc_dbg(heap_t *heap, bool unsafe_stack) {
-  bool prev_unsafe = hm_get_unsafe(heap);
-  hm_set_unsafe(heap,unsafe_stack);
+  size_t before = h_used(heap);
 
-  size_t removed = h_gc(heap);
+  //TODO: finns i erik-arbete
+  // gce_run_gc_event_dbg(heap, unsafe_stack);
 
-  hm_set_unsafe(heap,prev_unsafe);
+  size_t after = h_used(heap);
 
-  return removed;
+  return before - after;
 }
 
 size_t h_avail(heap_t *heap) {
