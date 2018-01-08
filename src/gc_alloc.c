@@ -10,12 +10,8 @@ void *gca_alloc_data(heap_t *heap, size_t bytes) {
       return NULL;
     }
     
-    bool try = om_build_pointerless(heap_pointer, bytes);
+    om_build_pointerless(heap, heap_pointer, bytes);
 
-    if (try == false) {
-        return NULL;        
-    }
-    
     return heap_pointer;
 }
 
