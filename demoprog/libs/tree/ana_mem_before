@@ -1,0 +1,237 @@
+Flat profile:
+
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls  us/call  us/call  name    
+ 61.85      1.26     1.26  2000000     0.63     0.66  find_node
+ 22.58      1.72     0.46 83149322     0.01     0.01  node_height
+  4.17      1.81     0.09   999762     0.09     0.64  balance
+  2.95      1.87     0.06 39190297     0.00     0.00  default_compare
+  1.72      1.90     0.04 21252598     0.00     0.01  update_height
+  1.47      1.93     0.03  1000000     0.03     0.69  tree_has_key
+  1.23      1.96     0.03 20322063     0.00     0.01  node_balance
+  0.98      1.98     0.02  2095011     0.01     0.01  node_cut
+  0.98      2.00     0.02                             is_leaf
+  0.98      2.02     0.02                             main
+  0.49      2.03     0.01  1999524     0.01     0.01  default_copy
+  0.49      2.04     0.01   698337     0.01     0.07  tree_rotate
+  0.25      2.04     0.01  1000000     0.01     1.31  tree_insert
+  0.00      2.04     0.00  1396674     0.00     0.01  node_swap_children
+  0.00      2.04     0.00   999762     0.00     0.00  new_node
+  0.00      2.04     0.00   698337     0.00     0.00  node_switch
+  0.00      2.04     0.00        1     0.00     0.00  tree_new
+
+ %         the percentage of the total running time of the
+time       program used by this function.
+
+cumulative a running sum of the number of seconds accounted
+ seconds   for by this function and those listed above it.
+
+ self      the number of seconds accounted for by this
+seconds    function alone.  This is the major sort for this
+           listing.
+
+calls      the number of times this function was invoked, if
+           this function is profiled, else blank.
+
+ self      the average number of milliseconds spent in this
+ms/call    function per call, if this function is profiled,
+	   else blank.
+
+ total     the average number of milliseconds spent in this
+ms/call    function and its descendents per call, if this
+	   function is profiled, else blank.
+
+name       the name of the function.  This is the minor sort
+           for this listing. The index shows the location of
+	   the function in the gprof listing. If the index is
+	   in parenthesis it shows where it would appear in
+	   the gprof listing if it were to be printed.
+
+Copyright (C) 2012-2015 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+		     Call graph (explanation follows)
+
+
+granularity: each sample hit covers 2 byte(s) for 0.49% of 2.04 seconds
+
+index % time    self  children    called     name
+                                                 <spontaneous>
+[1]     99.0    0.02    2.00                 main [1]
+                0.01    1.31 1000000/1000000     tree_insert [3]
+                0.03    0.66 1000000/1000000     tree_has_key [4]
+                0.00    0.00       1/1           tree_new [17]
+-----------------------------------------------
+                             39189580             find_node [2]
+                0.63    0.03 1000000/2000000     tree_insert [3]
+                0.63    0.03 1000000/2000000     tree_has_key [4]
+[2]     64.7    1.26    0.06 2000000+39189580 find_node [2]
+                0.06    0.00 39190297/39190297     default_compare [9]
+                             39189580             find_node [2]
+-----------------------------------------------
+                0.01    1.31 1000000/1000000     main [1]
+[3]     64.2    0.01    1.31 1000000         tree_insert [3]
+                0.63    0.03 1000000/2000000     find_node [2]
+                0.09    0.55  999762/999762      balance [5]
+                0.01    0.00 1999524/1999524     default_copy [14]
+                0.00    0.00  999762/999762      new_node [15]
+-----------------------------------------------
+                0.03    0.66 1000000/1000000     main [1]
+[4]     33.8    0.03    0.66 1000000         tree_has_key [4]
+                0.63    0.03 1000000/2000000     find_node [2]
+-----------------------------------------------
+                             18856162             balance [5]
+                0.09    0.55  999762/999762      tree_insert [3]
+[5]     31.1    0.09    0.55  999762+18856162 balance [5]
+                0.03    0.22 19855924/21252598     update_height [7]
+                0.03    0.23 20322063/20322063     node_balance [8]
+                0.01    0.04  698337/698337      tree_rotate [10]
+                             18856162             balance [5]
+-----------------------------------------------
+                0.23    0.00 40644126/83149322     node_balance [8]
+                0.24    0.00 42505196/83149322     update_height [7]
+[6]     22.5    0.46    0.00 83149322         node_height [6]
+-----------------------------------------------
+                0.00    0.02 1396674/21252598     tree_rotate [10]
+                0.03    0.22 19855924/21252598     balance [5]
+[7]     13.2    0.04    0.24 21252598         update_height [7]
+                0.24    0.00 42505196/83149322     node_height [6]
+-----------------------------------------------
+                0.03    0.23 20322063/20322063     balance [5]
+[8]     12.2    0.03    0.23 20322063         node_balance [8]
+                0.23    0.00 40644126/83149322     node_height [6]
+-----------------------------------------------
+                0.06    0.00 39190297/39190297     find_node [2]
+[9]      2.9    0.06    0.00 39190297         default_compare [9]
+-----------------------------------------------
+                0.01    0.04  698337/698337      balance [5]
+[10]     2.3    0.01    0.04  698337         tree_rotate [10]
+                0.00    0.02 1396674/21252598     update_height [7]
+                0.00    0.01 1396674/1396674     node_swap_children [13]
+                0.01    0.00  698337/2095011     node_cut [11]
+                0.00    0.00  698337/698337      node_switch [16]
+-----------------------------------------------
+                0.01    0.00  698337/2095011     tree_rotate [10]
+                0.01    0.00 1396674/2095011     node_swap_children [13]
+[11]     1.0    0.02    0.00 2095011         node_cut [11]
+-----------------------------------------------
+                                                 <spontaneous>
+[12]     1.0    0.02    0.00                 is_leaf [12]
+-----------------------------------------------
+                0.00    0.01 1396674/1396674     tree_rotate [10]
+[13]     0.7    0.00    0.01 1396674         node_swap_children [13]
+                0.01    0.00 1396674/2095011     node_cut [11]
+-----------------------------------------------
+                0.01    0.00 1999524/1999524     tree_insert [3]
+[14]     0.5    0.01    0.00 1999524         default_copy [14]
+-----------------------------------------------
+                0.00    0.00  999762/999762      tree_insert [3]
+[15]     0.0    0.00    0.00  999762         new_node [15]
+-----------------------------------------------
+                0.00    0.00  698337/698337      tree_rotate [10]
+[16]     0.0    0.00    0.00  698337         node_switch [16]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[17]     0.0    0.00    0.00       1         tree_new [17]
+-----------------------------------------------
+
+ This table describes the call tree of the program, and was sorted by
+ the total amount of time spent in each function and its children.
+
+ Each entry in this table consists of several lines.  The line with the
+ index number at the left hand margin lists the current function.
+ The lines above it list the functions that called this function,
+ and the lines below it list the functions this one called.
+ This line lists:
+     index	A unique number given to each element of the table.
+		Index numbers are sorted numerically.
+		The index number is printed next to every function name so
+		it is easier to look up where the function is in the table.
+
+     % time	This is the percentage of the `total' time that was spent
+		in this function and its children.  Note that due to
+		different viewpoints, functions excluded by options, etc,
+		these numbers will NOT add up to 100%.
+
+     self	This is the total amount of time spent in this function.
+
+     children	This is the total amount of time propagated into this
+		function by its children.
+
+     called	This is the number of times the function was called.
+		If the function called itself recursively, the number
+		only includes non-recursive calls, and is followed by
+		a `+' and the number of recursive calls.
+
+     name	The name of the current function.  The index number is
+		printed after it.  If the function is a member of a
+		cycle, the cycle number is printed between the
+		function's name and the index number.
+
+
+ For the function's parents, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the function into this parent.
+
+     children	This is the amount of time that was propagated from
+		the function's children into this parent.
+
+     called	This is the number of times this parent called the
+		function `/' the total number of times the function
+		was called.  Recursive calls to the function are not
+		included in the number after the `/'.
+
+     name	This is the name of the parent.  The parent's index
+		number is printed after it.  If the parent is a
+		member of a cycle, the cycle number is printed between
+		the name and the index number.
+
+ If the parents of the function cannot be determined, the word
+ `<spontaneous>' is printed in the `name' field, and all the other
+ fields are blank.
+
+ For the function's children, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the child into the function.
+
+     children	This is the amount of time that was propagated from the
+		child's children to the function.
+
+     called	This is the number of times the function called
+		this child `/' the total number of times the child
+		was called.  Recursive calls by the child are not
+		listed in the number after the `/'.
+
+     name	This is the name of the child.  The child's index
+		number is printed after it.  If the child is a
+		member of a cycle, the cycle number is printed
+		between the name and the index number.
+
+ If there are any cycles (circles) in the call graph, there is an
+ entry for the cycle-as-a-whole.  This entry shows who called the
+ cycle (as parents) and the members of the cycle (as children.)
+ The `+' recursive calls entry shows the number of function calls that
+ were internal to the cycle, and the calls entry for each member shows,
+ for that member, how many times it was called from other members of
+ the cycle.
+
+Copyright (C) 2012-2015 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+Index by function name
+
+   [5] balance                [15] new_node                [4] tree_has_key
+   [9] default_compare         [8] node_balance            [3] tree_insert
+  [14] default_copy           [11] node_cut               [17] tree_new
+   [2] find_node               [6] node_height            [10] tree_rotate
+  [12] is_leaf                [13] node_swap_children      [7] update_height
+   [1] main                   [16] node_switch
