@@ -296,7 +296,7 @@ bool om_build(heap_t *heap, void *object, const char *format) {
         return true;
     }
     SET_BIT_ARRAY;
-    edit_explored(heap, object, true);
+    edit_explored(heap, object, false);
     return true;
 }
 
