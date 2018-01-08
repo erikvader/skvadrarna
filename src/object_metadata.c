@@ -196,7 +196,7 @@ size_t bit_array64(void *object, const char *format, bool write)
 
 
 //sets explored to explored
-void edit_explored(const void * heap, void * object, bool explored){
+void edit_explored(void * heap, void * object, bool explored){
   if(hm_get_explored_bit(heap) == explored){
     if(IS_FORMAT_STRING){
       SET_FORMAT_STRING;
@@ -223,7 +223,7 @@ void edit_explored(const void * heap, void * object, bool explored){
 ///
 /// \param object place where the object is stored
 /// \param size the size of the object to be stored.
-void om_build_pointerless(const heap_t * heap ,void *object, const size_t size){
+void om_build_pointerless(heap_t * heap ,void *object, const size_t size){
   assert(object != NULL);
   assert(object_size_valid(size));//Object is bigger then a chunk - header
   memset(object-HEADER_SIZ,'\0',HEADER_SIZ);//Sets header to 0
@@ -505,7 +505,7 @@ void *om_get_forwarding(const void *object){
 /// \param object The object.
 /// \returns True if the funciton om_toggle_explored has been called a odd number of times.
 
-bool om_get_explored(const heap_t * heap, const void * object){
+bool om_get_explored(heap_t * heap, const void * object){
   return (IS_EXPLORED != hm_get_explored_bit(heap)) || IS_FORWARDING;
 }
 
@@ -514,7 +514,7 @@ bool om_get_explored(const heap_t * heap, const void * object){
 ///
 /// \param object, the object to switch between true and false for om_is_explored.
 
-void om_set_explored(const heap_t * heap, void * object){
+void om_set_explored(heap_t * heap, void * object){
   edit_explored(heap,object,true);
 
 }

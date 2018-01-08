@@ -13,7 +13,7 @@ const size_t header_siz;
 ///
 /// \param object place where the object is stored
 /// \param size the size of the object to be stored.
-void om_build_pointerless(const heap_t* heap, void *object, const size_t size);
+void om_build_pointerless( heap_t* heap, void *object, const size_t size);
 
 /// builds a metadata given a format string.
 ///
@@ -101,14 +101,14 @@ void *om_get_forwarding(const void *object);
 /// \param object The object.
 /// \returns True if the funciton om_toggle_explored has been called a odd number of times.
 
-bool om_get_explored(const heap_t * heap, const void * object);
+bool om_get_explored(heap_t * heap, const void * object);
 
 /// Switches the is_explored between true and false:
 /// Default false
 ///
 /// \param object, the object to switch between true and false for om_is_explored.
 
-void om_set_explored(const heap_t * heap, void * object);
+void om_set_explored(heap_t * heap, void * object);
 
 
 #endif
