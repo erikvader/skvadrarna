@@ -4,29 +4,58 @@
 #include <assert.h>
 #include "include/heap_metadata.h"
 
+// Note that many functions in this file are written heavily under the assumption that CHUNK_SIZE is divisible by OBJECT_ALIGNMENT
 #define CHUNK_SIZE 2048
-#define OBJECT_ALIGNMENT 4
+#define MIN_OBJ_SIZE 16
+#define OBJECT_ALIGNMENT MIN_OBJ_SIZE
 
-typedef bool bitarr_t;
+typedef uint8_t bitarr_t;
 
+/*
+ * The metadata consists of this struct and two arrays containing allocation data.
+ * The rest of the heap is divided into chunks, for which allocation data is kept
+ * in the arrays.
+ */
 typedef struct heap_header {
     // the start of where the free space is at init
-    void *heap_start;
-    // size of the usabe heap, that is, heap_size - header_size
+    void *chunks_start;
+    // size of the usable heap, that is, heap_size - header_size
     size_t heap_siz;
-    // should always be 2048
+    // size of each chunk
     size_t chunk_siz;
     // if the stack is safe or not
     bool unsafe_stack;
-    //bit for checking whether objects are explored or not.
+    //bit for checking whether objects are explored or not
     bool exploration_bit;
-    // the threashold for when a gc_event should trigger
+    // the threshold for when a gc_event should trigger
     float gc_threshold;
-    // the bit_array for which space is used
-    bitarr_t *used_arr;
-    // arr of pointers fore where the free space begins in every chunk
+    // the bit_array storing which addresses are allocated
+    bitarr_t *alloc_map;
+    // arr of pointers for where the free space begins in every chunk
     void **free_pointers;
 } heap_header_t;
+
+
+void set_addr_allocated(heap_t *heap, void *addr, bool allocated) {
+    heap_header_t *head = (heap_header_t *) heap;
+    int index = (addr - head -> chunks_start) / OBJECT_ALIGNMENT;
+    int byte_index = index / 8;
+    int bit_index = index % 8;
+    head->alloc_map[byte_index] &= ~(1 << bit_index);
+    head->alloc_map[byte_index] |= (allocated << bit_index);
+}
+
+
+
+bool get_addr_allocated(heap_t *heap, void *addr) {
+    heap_header_t *head = (heap_header_t *) heap;
+    size_t index = (addr - head -> chunks_start) / OBJECT_ALIGNMENT;
+    int byte_index = index / 8;
+    int bit_index = index % 8;
+    uint8_t byte = head -> alloc_map[byte_index];
+    return byte & (1 << bit_index);
+}
+
 
 
 /*
@@ -41,29 +70,49 @@ void *align_pointer(void *pointer) {
     return (void *) pval + OBJECT_ALIGNMENT;
 }
 
+// Calculates where the first chunk should start (i.e. where the header should end)
+void* get_chunks_start(heap_t *header_start, size_t total_size) {
+    void *heap_end = (void *) header_start + total_size;
+    total_size -= sizeof(heap_header_t);
+    int n_chunks = total_size / CHUNK_SIZE;
+
+    void *chunks_start;
+    do {
+        size_t alloc_map_size = (n_chunks * CHUNK_SIZE / OBJECT_ALIGNMENT) * sizeof(bitarr_t) / 8;
+        chunks_start = (void *) header_start + sizeof(heap_header_t) + sizeof(void *) * n_chunks + alloc_map_size;
+        chunks_start = align_pointer(chunks_start);
+        n_chunks--;
+    } while (chunks_start + n_chunks * CHUNK_SIZE > heap_end);
+    return chunks_start;
+}
+
 void hm_init(heap_t *heap, size_t size, bool unsafe_stack, float gc_threshold) {
     heap_header_t *head = (heap_header_t *) heap;
-    void *unaligned_heap_start = ((void *)heap) + hm_measure_required_space(size);
-    head -> heap_start = align_pointer(unaligned_heap_start);
+    head -> chunks_start = get_chunks_start(heap, size);
 
-    size_t available_space = unaligned_heap_start + size - head->heap_start;
+    size_t available_space = (void *) heap + size - head->chunks_start;
     head -> heap_siz = available_space / CHUNK_SIZE * CHUNK_SIZE; // Rounds down to whole chunks
-
     head -> chunk_siz = CHUNK_SIZE;
     head -> unsafe_stack = unsafe_stack;
     head -> gc_threshold = gc_threshold;
-
     head -> free_pointers = ((void *) heap) + sizeof(heap_header_t);
     head -> exploration_bit = true;
     int n_chunks = hm_get_amount_chunks(heap);
     for(int i = 0; i < n_chunks; i++) {
-        head->free_pointers[i] = head->heap_start + i * head->chunk_siz;
+        head->free_pointers[i] = head->chunks_start + i * head->chunk_siz;
+    }
+    head -> alloc_map = (bitarr_t *) head -> free_pointers + sizeof(void *) * n_chunks;
+    for(void *addr = head->chunks_start; addr < head -> chunks_start + head->heap_siz; addr += OBJECT_ALIGNMENT) {
+        set_addr_allocated(heap, addr, false);
     }
 }
 
-size_t hm_measure_required_space(size_t heap_siz) {
+size_t hm_measure_header_size(size_t heap_siz) {
     int n_chunks = heap_siz / CHUNK_SIZE;
-    return sizeof(heap_header_t) + sizeof(void *) * n_chunks;
+    size_t struct_size = sizeof(heap_header_t);
+    size_t free_pointer_arr_size = sizeof(void *) * n_chunks;
+    size_t alloc_map_size = (n_chunks * CHUNK_SIZE / OBJECT_ALIGNMENT) * sizeof(bitarr_t) / 8;
+    return struct_size + free_pointer_arr_size + alloc_map_size;
 }
 
 
@@ -72,7 +121,7 @@ size_t hm_measure_required_space(size_t heap_siz) {
  */
 size_t chunk_calc_avail_space(heap_t *heap, chunk_t chunk) {
     heap_header_t *header = (heap_header_t *) heap;
-    void *chunk_start = header->heap_start + header->chunk_siz * chunk;
+    void *chunk_start = header->chunks_start + header->chunk_siz * chunk;
     size_t used_space = header->free_pointers[chunk] - chunk_start;
     return header->chunk_siz - used_space;
 }
@@ -91,11 +140,15 @@ void *hm_alloc_spec_chunk(heap_t *heap, size_t obj_siz, bool *ban) {
     if(obj_siz > CHUNK_SIZE) {
         return NULL;
     }
+    if(obj_siz < MIN_OBJ_SIZE) {
+        obj_siz = MIN_OBJ_SIZE;
+    }
     heap_header_t *head = (heap_header_t *) heap; //So we're able to use header metadata
-    void *free_space = head->heap_start;
+    void *free_space = head->chunks_start;
     for(int i = 0; i < hm_get_amount_chunks(heap); i++) {
         if(chunk_calc_avail_space(heap, i) >= obj_siz && !ban[i]) {
             void *allocated = head->free_pointers[i];
+            set_addr_allocated(heap, allocated, true);
             head->free_pointers[i] += obj_siz;
             head->free_pointers[i] = align_pointer(head->free_pointers[i]);
             return allocated;
@@ -108,7 +161,11 @@ void *hm_alloc_spec_chunk(heap_t *heap, size_t obj_siz, bool *ban) {
 void hm_reset_chunk(heap_t *heap, chunk_t index) {
     assert(heap && index >= 0 && index < hm_get_amount_chunks(heap));
     heap_header_t *header = (heap_header_t *) heap;
-    void *chunk_start = header->heap_start + header->chunk_siz * index;
+    void *chunk_start = header->chunks_start + header->chunk_siz * index;
+    for(void *addr = chunk_start; addr < header->free_pointers[index]; addr += OBJECT_ALIGNMENT) {
+        set_addr_allocated(heap, addr, false);
+    }
+
     header->free_pointers[index] = chunk_start;
 }
 
@@ -169,7 +226,7 @@ chunk_t hm_get_pointer_chunk(heap_t *heap, void *pointer) {
     assert(heap);
     heap_header_t *header = (heap_header_t *) heap;
     int n_chunks = hm_get_amount_chunks(heap);
-    void *chunk_start = header->heap_start;
+    void *chunk_start = header->chunks_start;
 
     for(int i = 0; i < n_chunks; i++) {
         void *next_chunk = chunk_start + header->chunk_siz;
@@ -183,13 +240,14 @@ chunk_t hm_get_pointer_chunk(heap_t *heap, void *pointer) {
 
 bool hm_pointer_exists(heap_t *heap, void *pointer) {
     heap_header_t *head = (heap_header_t *) heap;
-    void *upper_limit = (head -> heap_start) + (head -> heap_siz);
-    void *lower_limit = (head -> heap_start);
+    void *upper_limit = (head -> chunks_start) + (head -> heap_siz);
+    void *lower_limit = (head -> chunks_start);
     if(pointer <= upper_limit && pointer >= lower_limit) {
-        return true;
-    } else {
-        return false;
+        if((uintptr_t) pointer % OBJECT_ALIGNMENT == 0) {
+            return get_addr_allocated(heap, pointer);
+        }
     }
+    return false;
 }
 
 bool hm_get_explored_bit(heap_t *heap) {
