@@ -1,5 +1,5 @@
 #include <CUnit/CUnit.h>
-#include "../src/include/gc.h"
+#include "include/gc.h"
 #include "gc_event_test.h"
 
 typedef struct tree tree_t;
