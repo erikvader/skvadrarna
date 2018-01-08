@@ -5,8 +5,7 @@
 #include <string.h>
 #define HEADER_SIZ 8
 #define CHUNK_SIZ 2048
-#define OBJECT_MIN_SIZ 16
-#define object_size_valid(X) (X<=(CHUNK_SIZ-HEADER_SIZ)&&X>=OBJECT_MIN_SIZ)
+#define object_size_valid(X) (X<=(CHUNK_SIZ-HEADER_SIZ))
 
 #define HEADER (object - HEADER_SIZ)
 
