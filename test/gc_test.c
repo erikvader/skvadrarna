@@ -21,7 +21,8 @@ void gc_test_init_high_address() {
   h_delete(heap);
 }
 
-void gc_test_alloc_size() {CU_ADD_TEST(gcEvent, gc_test_gc_event_1);
+void gc_test_alloc_size() {
+  // CU_ADD_TEST(gcEvent, gc_test_gc_event_1);
   heap_t *heap = h_init(10 * CHUNK_SIZE, true, 1.0);
 
   size_t before = h_used(heap);
