@@ -1,6 +1,7 @@
 #include <CUnit/CUnit.h>
 #include <CUnit/Basic.h>
 
+#include "om_test.h"
 #include "si_test.h"
 #include "gc_test.h"
 #include "hm_test.h"
@@ -16,5 +17,8 @@ int main(int argc, char **argv) {
 
     CU_basic_run_tests();
     CU_cleanup_registry();
+
+    run_om_test();
+
     return CU_get_error();
 }
