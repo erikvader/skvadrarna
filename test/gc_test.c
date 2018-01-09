@@ -26,7 +26,7 @@ const char *list_format_string = "**";
 list_t *list_init(heap_t *heap) {
   list_t *list = h_alloc_struct(heap,"**");
   if (list != NULL) {
-    *list = (list_t) { .head = NULL, .heap = heap };   
+    *list = (list_t) { .head = NULL, .heap = heap };
   }
   return list;
 }
@@ -50,8 +50,8 @@ int list_size(list_t *list) {
   while (curr != NULL) {
     curr =  curr->next;
     ++size;
-  }    
-  
+  }
+
   return size;
 }
 
@@ -154,7 +154,7 @@ void gc_test_alloc_struct_1() {
 
 void gc_test_gc_event_1() {
   size_t heap_size = 16*CHUNK_SIZE;
-  
+
   heap_t *heap = h_init(heap_size, true, 1.0);
 
 
@@ -163,6 +163,7 @@ void gc_test_gc_event_1() {
     p = h_alloc_struct(heap,"i");
     *p = i;
   }
+  printf("%lu\n",h_used(heap));
 
   h_gc(heap);
 
@@ -208,25 +209,28 @@ void gc_test_gc_event_stress() {
 }
 
 void gc_test_alloc_list_stress() {
+  int fst_loop = 2048;
+  int snd_loop = 128;
+  
   size_t heap_size = 16*CHUNK_SIZE;
   heap_t *heap = h_init(heap_size,true,0.5);
   list_t *list = list_init(heap);
 
   int failed = 0;
-  for (int i = 0; i < 2048; ++i) {
+  for (int i = 0; i < fst_loop; ++i) {
     int siz1 = list_size(list);
-    int expected1[siz1 + 128];
+    int expected1[siz1 + snd_loop];
     for (int q = 0; q < siz1; ++q) {
-      expected1[128+q] = list_read(list,q);
+      expected1[snd_loop+q] = list_read(list,q);
     }
-    for (int q = 0; q < 128; ++q) {
-      bool succ = list_prepend(list,128*i+q);
-      expected1[128-q-1] = 128*i+q;
+    for (int q = 0; q < snd_loop; ++q) {
+      bool succ = list_prepend(list,snd_loop*i+q);
+      expected1[snd_loop-q-1] = snd_loop*i+q;
       if (!succ) {
         ++failed; 
       }
     }
-    for (int q = 0; q < siz1 + 128; ++q) {
+    for (int q = 0; q < siz1 + snd_loop; ++q) {
       if (expected1[q] != list_read(list,q)) {
         ++failed;
       }

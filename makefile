@@ -32,7 +32,7 @@ test: $(OUTDIR)/$(TESTEXECNAME)
 	$(OUTDIR)/$(TESTEXECNAME)
 
 memtest: $(OUTDIR)/$(TESTEXECNAME)
-	valgrind --leak-check=full $(OUTDIR)/$(TESTEXECNAME)
+	valgrind --leak-check=full --track-origins=yes $(OUTDIR)/$(TESTEXECNAME)
 
 dirs:
 	@mkdir -p $(OUTDIR) $(BUILDDIR) $(DEPSDIR)

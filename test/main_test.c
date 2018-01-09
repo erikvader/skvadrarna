@@ -7,7 +7,11 @@
 #include "hm_test.h"
 #include "gc_event_test.h"
 
+void **test_bot;
+
 int main() {
+  void *p = NULL;
+  test_bot = &p;
     CU_initialize_registry();
 
     // Add some test suites

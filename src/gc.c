@@ -1,18 +1,20 @@
 #include <stdlib.h>
+#include <string.h>
 #include "include/gc.h"
 #include "include/heap_metadata.h"
 #include "include/stack_iter.h"
 #include "include/gc_alloc.h"
 #include "include/gc_event.h"
 
-#define LARGE_ADDRESS ((size_t) 0x1000000)
+#define LARGE_ADDRESS ((size_t) 0x01000000)
 
 
 heap_t *h_init(size_t bytes, bool unsafe_stack, float gc_threshold) {
     void *mem_pos;
     posix_memalign(&mem_pos, LARGE_ADDRESS, bytes);
     heap_t *heap = mem_pos;
-
+    memset(mem_pos, 0, bytes);
+    //heap_t *heap = calloc(1,bytes);;
     hm_init(heap, bytes, unsafe_stack, gc_threshold);
 
     return heap;

@@ -72,7 +72,7 @@ void gc_event_test_the_only_test(){
 
     temp = temp->next;
     CU_ASSERT_TRUE(temp->id == 3);
-
+    h_delete(heap);
 }
 
 void add_gc_event_test_suites() {

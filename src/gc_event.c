@@ -80,7 +80,8 @@ void gce_run_gc_event_dbg(heap_t *heap, bool unsafe) {
 
     //unsafe
     bool unsafe_chunks[num_chunks];
-    init_variable_sized_array(unsafe_chunks, false, num_chunks);
+    //memset(unsafe_chunks,false,num_chunks);
+    init_variable_sized_array(unsafe_chunks, num_chunks, false);
 
     //mark all unsafe
     if(unsafe) {
@@ -97,7 +98,8 @@ void gce_run_gc_event_dbg(heap_t *heap, bool unsafe) {
 
     //get locked chunks
     bool locked[num_chunks];
-    init_variable_sized_array(locked, false, num_chunks);
+    //memset(unsafe_chunks,false,num_chunks);
+    init_variable_sized_array(locked, num_chunks, false);
     hm_get_used_chunks(heap, locked);
 
     //explore

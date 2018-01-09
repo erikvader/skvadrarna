@@ -2,9 +2,12 @@
 //#include <stdio.h>
 #include "include/heap_metadata.h"
 #include <stdint.h>
+#include <setjmp.h>
 
 extern char **environ;
-#define bot ((uintptr_t) environ)
+extern void **test_bot;
+//#define bot ((uintptr_t) environ)
+#define bot ((uintptr_t) test_bot)
 size_t global_alignment = sizeof(void *);
 
 #define iter_step(mod,siz,dir) \
@@ -19,6 +22,10 @@ size_t global_alignment = sizeof(void *);
 
 #define get_pointer(p) (* ((void **) p))
 
+#define Dump_registers()                        \
+  jmp_buf env;                                  \
+  if (setjmp(env)) abort();                     \
+
 
 void **si_next_pointer_dbg(heap_t *heap, void **top, si_pointer_check_fun fun, size_t alignment) {
     if(top == NULL) {
@@ -27,6 +34,8 @@ void **si_next_pointer_dbg(heap_t *heap, void **top, si_pointer_check_fun fun, s
     if(top == (void **) bot) {
         return NULL;
     }
+
+    Dump_registers();
 
     uintptr_t out = (uintptr_t) top;
 
@@ -42,7 +51,8 @@ void **si_next_pointer_dbg(heap_t *heap, void **top, si_pointer_check_fun fun, s
         }
     }
 
-    while(environ_check(out, descending) && (!fun(heap, get_pointer(out)))) {
+    while(environ_check(out, descending) &&
+            (!fun(heap, get_pointer(out)))) {
         iter_step(out, alignment, descending);
     }
 
