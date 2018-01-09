@@ -22,7 +22,7 @@ void point(tree_t *t1, tree_t *t2){
 }
 
 void gc_event_test_the_only_test(){
-    heap_t *heap = h_init(4*2048, false, 1);
+    heap_t *heap = h_init(5*2048, false, 1);
 
     // alloc some things in hopefully different chunks
     tree_t *t1  = new_tree(heap, 1);
