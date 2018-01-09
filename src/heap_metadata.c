@@ -8,6 +8,7 @@
 #define CHUNK_SIZE 2048
 #define MIN_OBJ_SIZE 16
 #define OBJECT_ALIGNMENT MIN_OBJ_SIZE
+const size_t header_size = 8; // \TODO: fix this so it imports instead 
 
 typedef uint8_t bitarr_t;
 
@@ -133,6 +134,22 @@ void *hm_get_free_space(heap_t *heap, size_t obj_siz) { //TODO: Must work with m
     return hm_alloc_spec_chunk(heap, obj_siz, banned_chunks);
 }
 
+bool chunk_can_alloc(heap_t *heap,chunk_t index,size_t obj_size) {
+  heap_header_t *head = (heap_header_t *) heap;
+  //to_align
+  
+  //OBJECT_ALIGNMENT
+  uintptr_t int_pointer = (uintptr_t) head->free_pointers[index];
+  uintptr_t int_pointer_mod = int_pointer;
+
+  int_pointer_mod += header_size;
+  int_pointer_mod += OBJECT_ALIGNMENT - (int_pointer_mod % OBJECT_ALIGNMENT);
+
+  size_t tot_size = obj_size + (int_pointer_mod - int_pointer);
+  return chunk_calc_avail_space(heap,index) >= tot_size;  
+  
+}
+
 void *hm_alloc_spec_chunk(heap_t *heap, size_t obj_siz, bool *ban) {
     if(obj_siz == 0) {
         return NULL;
@@ -140,20 +157,26 @@ void *hm_alloc_spec_chunk(heap_t *heap, size_t obj_siz, bool *ban) {
     if(obj_siz > CHUNK_SIZE) {
         return NULL;
     }
-    if(obj_siz < MIN_OBJ_SIZE) {
-        obj_siz = MIN_OBJ_SIZE;
-    }
+    //if(obj_siz < MIN_OBJ_SIZE) {
+    //    obj_siz = MIN_OBJ_SIZE;
+    //}
     heap_header_t *head = (heap_header_t *) heap; //So we're able to use header metadata
-    void *free_space = head->chunks_start;
+    //void *free_space = head->chunks_start;
     for(int i = 0; i < hm_get_amount_chunks(heap); i++) {
-        if(chunk_calc_avail_space(heap, i) >= obj_siz && !ban[i]) {
-            void *allocated = head->free_pointers[i];
-            set_addr_allocated(heap, allocated, true);
-            head->free_pointers[i] += obj_siz;
-            head->free_pointers[i] = align_pointer(head->free_pointers[i]);
-            return allocated;
-        }
-        free_space += head->chunk_siz;
+      if(chunk_can_alloc(heap,i,obj_siz) && !ban[i]) {
+        //printf("%p , ", head->free_pointers[i]);
+        head->free_pointers[i] += header_size;
+        
+        head->free_pointers[i] = align_pointer(head->free_pointers[i]);
+        void *allocated = head->free_pointers[i];
+        //printf("%p\n", head->free_pointers[i]);
+        set_addr_allocated(heap, allocated, true);
+        head->free_pointers[i] += obj_siz;
+        
+            
+        return allocated;
+      }
+      //free_space += head->chunk_siz;
     }
     return NULL;
 }

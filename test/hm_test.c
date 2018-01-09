@@ -3,6 +3,7 @@
 #include "hm_test.h"
 
 #define CHUNK_SIZE 2048
+#define MAX_OBJ_SIZE (CHUNK_SIZE - 16)
 #define ALIGNMENT 16
 // Maximum possible padding due to alignment, used to ensure a minimum heap size is reached.
 // E.g. a heap given CHUNK_SIZE + ALIGNMENT_PADDING size will always be able to hold one chunk.
@@ -37,7 +38,7 @@ void test_hm_get_amount_chunks() {
 void test_get_free_space() {
     //Allocates all heap space.
     int n_chunks = 10;
-    size_t test_size = CHUNK_SIZE / 4;
+    size_t test_size = CHUNK_SIZE / 4 - 16;
     HEAP_INIT(n_chunks, 1);
     for(int i = 0; i < 4 * n_chunks; i++) {
         CU_ASSERT_TRUE(hm_get_free_space(heap, test_size) != NULL);
@@ -88,7 +89,7 @@ void test_alloc_spec_chunk2() {
     HEAP_INIT(n_chunks, 1);
     bool banned_chunks[8] = {true, true, true, false, false, true, false, true};
     for (int i = 0; i < 3; i++) {
-        void *allocated = hm_alloc_spec_chunk(heap, CHUNK_SIZE, banned_chunks);
+        void *allocated = hm_alloc_spec_chunk(heap, CHUNK_SIZE - 16, banned_chunks);
         CU_ASSERT_TRUE(allocated != NULL);
         chunk_t chunk = hm_get_pointer_chunk(heap, allocated);
         CU_ASSERT_TRUE(chunk == 3 || chunk == 4 || chunk == 6);
@@ -98,7 +99,7 @@ void test_alloc_spec_chunk2() {
 
 
 void test_hm_over_threshold() {
-    size_t chunk_object = CHUNK_SIZE;
+    size_t chunk_object = CHUNK_SIZE - 16;
     int n_chunks = 5;
     HEAP_INIT(n_chunks, 0.5);
     hm_get_free_space(heap, chunk_object);
@@ -129,7 +130,7 @@ void test_hm_size_available1() {
 }
 
 void test_hm_size_available2() {
-    size_t object = CHUNK_SIZE;
+    size_t object = MAX_OBJ_SIZE;
     int n_chunks = 5;
     HEAP_INIT(n_chunks, 1);
     hm_get_free_space(heap, object);
@@ -137,7 +138,7 @@ void test_hm_size_available2() {
 }
 
 void test_hm_size_available3() {
-    size_t object = CHUNK_SIZE;
+    size_t object = MAX_OBJ_SIZE;
     int n_chunks = 5;
     HEAP_INIT(n_chunks, 1);
     hm_get_free_space(heap, object);
@@ -157,7 +158,7 @@ void test_hm_size_used1() {
 }
 
 void test_hm_size_used2() {
-    size_t object = CHUNK_SIZE;
+  size_t object = MAX_OBJ_SIZE;
     int n_chunks = 5;
     HEAP_INIT(n_chunks, 1);
     hm_get_free_space(heap, object);
@@ -165,7 +166,7 @@ void test_hm_size_used2() {
 }
 
 void test_hm_size_used3() {
-    size_t object = CHUNK_SIZE - 1;
+    size_t object = MAX_OBJ_SIZE - 1;
     int n_chunks = 5;
     HEAP_INIT(n_chunks, 1);
     hm_get_free_space(heap, object);
@@ -177,7 +178,7 @@ void test_hm_size_used3() {
 }
 
 void test_hm_pointer_exists1() {
-    size_t object = CHUNK_SIZE;
+    size_t object = MAX_OBJ_SIZE;
     int n_chunks = 5;
     HEAP_INIT(n_chunks, 1);
     void *test_pointer = hm_get_free_space(heap, object);
@@ -236,14 +237,15 @@ void test_hm_reset_chunk1() {
     HEAP_INIT(n_chunks, 1);
 
     for(int n = 0; n < n_chunks; n++) {
-        hm_get_free_space(heap, CHUNK_SIZE); //alloc all available space
+        void *p = hm_get_free_space(heap, CHUNK_SIZE-16); //alloc all available space
+        
     }
 
     for(int n = 0; n < n_chunks; n++) {
         void *allocd = hm_get_free_space(heap, 1);
         CU_ASSERT_TRUE(allocd == NULL);
         hm_reset_chunk(heap, n);
-        allocd = hm_get_free_space(heap, CHUNK_SIZE);
+        allocd = hm_get_free_space(heap, MAX_OBJ_SIZE);
         chunk_t chunk = hm_get_pointer_chunk(heap, allocd);
         CU_ASSERT_TRUE(chunk == n);
     }
@@ -269,7 +271,7 @@ void test_hm_get_used_chunks() {
 
     bool banned[8] = {true, true, true, false, false, true, false, true};
     for(int i = 0; i < n_chunks; i++) {
-        hm_alloc_spec_chunk(heap, CHUNK_SIZE, banned);
+        hm_alloc_spec_chunk(heap, MAX_OBJ_SIZE, banned);
     }
 
     bool used[n_chunks];

@@ -162,7 +162,7 @@ bool test_redirect() {
 int run_om_test(void) {
 
 
-    FILE *fp = fopen("om_testdata.txt", "r");
+    FILE *fp = fopen("test/om_testdata.txt", "r");
     true_size = 0;
     data = 0;
     no_pointers = 0;
