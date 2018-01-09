@@ -24,6 +24,7 @@ int init(void) {
     object = calloc(101, sizeof(void *)) + sizeof(void *);
     heap = malloc(4096);
     hm_init(heap, 4096, false, 1);
+    hm_toggle_explored_bit(heap);
     uint64_t *number = object;
     for(int i = 1; i <= 100; ++i) {
         number[i - 1] = i;
