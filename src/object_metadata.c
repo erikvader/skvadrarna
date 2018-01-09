@@ -223,7 +223,7 @@ void edit_explored(void *heap, void *object, bool explored) {
 void om_build_pointerless(heap_t *heap , void *object, const size_t size) {
     assert(object != NULL);
     assert(object_size_valid(size));//Object is bigger then a chunk - header
-    memset(object - HEADER_SIZ, '\0', HEADER_SIZ); //Sets header to 0
+    memset(HEADER, '\0', HEADER_SIZ); //Sets header to 0
     uint64_t *header_data  = HEADER;// header_data is the header
     *header_data = ((uint64_t)size) << 4; //Stores size 4 bits from end
     SET_SIZE;
@@ -279,6 +279,7 @@ size_t om_format_len(const void *object) {
 bool om_build(heap_t *heap, void *object, const char *format) {
     assert(object != NULL && format != NULL);
     assert(sizeof(int) == 4 && sizeof(void *) == 8); //needs to be exstended to work for 32 bit
+    memset(HEADER, '\0', HEADER_SIZ); //Sets header to 0
     if(strchr(format, '*') == NULL) {
         om_build_pointerless(heap, object, om_size_format(format));
         return true;
