@@ -43,6 +43,18 @@ bool list_prepend(list_t *list, int e) {
   return true;
 }
 
+int list_size(list_t *list) {
+  int size = 0;
+  node_t *curr = list->head;
+
+  while (curr != NULL) {
+    curr =  curr->next;
+    ++size;
+  }    
+  
+  return size;
+}
+
 int list_read(list_t *list, int index) {
   node_t *curr = list->head;
 
@@ -66,6 +78,9 @@ void list_remove_every_other(list_t *list) {
     if (curr->next != NULL) {
       curr->next = curr->next->next;
       curr = curr->next;
+    }
+    else {
+      return;
     }
   }
 }
@@ -198,14 +213,35 @@ void gc_test_alloc_list_stress() {
   list_t *list = list_init(heap);
 
   int failed = 0;
-  for (int i = 0; i < 32 ; ++i) {
-    for (int q = 0; q < 128; q++) {
-      bool succ = list_prepend(list,128*i + q);
+  for (int i = 0; i < 2048; ++i) {
+    int siz1 = list_size(list);
+    int expected1[siz1 + 128];
+    for (int q = 0; q < siz1; ++q) {
+      expected1[128+q] = list_read(list,q);
+    }
+    for (int q = 0; q < 128; ++q) {
+      bool succ = list_prepend(list,128*i+q);
+      expected1[128-q-1] = 128*i+q;
       if (!succ) {
         ++failed; 
       }
     }
+    for (int q = 0; q < siz1 + 128; ++q) {
+      if (expected1[q] != list_read(list,q)) {
+        ++failed;
+      }
+    }
+    int siz2 = list_size(list);
+    int expected2[siz2 /2 + siz2 % 2];
+    for (int q = 0; q < siz2; q+=2) {
+      expected2[q/2] = list_read(list,q);
+    }
     list_remove_every_other(list);
+    for (int q = 0; q < siz2 / 2 + siz2 % 2; ++q) {
+      if (expected2[q] != list_read(list,q)) {
+          ++failed;
+      }
+    }
   }
   CU_ASSERT_TRUE(failed == 0);
   h_delete(heap);
@@ -226,4 +262,5 @@ void add_gc_test_suites() {
   CU_ADD_TEST(gcEvent, gc_test_gc_event_1);
   CU_ADD_TEST(gcEvent, gc_test_gc_event_2);
   CU_ADD_TEST(gcEvent, gc_test_gc_event_stress);
+  CU_ADD_TEST(gcEvent, gc_test_alloc_list_stress);
 }
