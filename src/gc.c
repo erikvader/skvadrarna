@@ -58,8 +58,7 @@ size_t h_gc(heap_t *heap) {
 size_t h_gc_dbg(heap_t *heap, bool unsafe_stack) {
     size_t before = h_used(heap);
 
-    //TODO: finns i erik-arbete
-    // gce_run_gc_event_dbg(heap, unsafe_stack);
+    gce_run_gc_event_dbg(heap, unsafe_stack);
 
     size_t after = h_used(heap);
 
