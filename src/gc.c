@@ -5,7 +5,7 @@
 #include "include/gc_alloc.h"
 #include "include/gc_event.h"
 
-#define LARGE_ADDRESS ((size_t) 0x10000000)
+#define LARGE_ADDRESS ((size_t) 0x1000000)
 
 
 heap_t *h_init(size_t bytes, bool unsafe_stack, float gc_threshold) {
