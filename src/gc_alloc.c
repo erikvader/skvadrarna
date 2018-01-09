@@ -2,6 +2,11 @@
 #include "include/object_metadata.h"
 #include <string.h>
 
+
+void gca_set_mem_to_zero(void *obj, size_t bytes) {
+  memset(obj,0,bytes);
+}
+
 void *gca_alloc_data(heap_t *heap, size_t bytes) {
     
     void* heap_pointer = hm_get_free_space(heap, bytes);
@@ -12,6 +17,7 @@ void *gca_alloc_data(heap_t *heap, size_t bytes) {
     
     om_build_pointerless(heap, heap_pointer, bytes);
 
+    gca_set_mem_to_zero(heap_pointer,bytes);
     return heap_pointer;
 }
 
@@ -39,6 +45,7 @@ void *gca_alloc_struct(heap_t *heap, char *format)
     if (try == false) {
         return NULL;        
     }
-    
+
+    gca_set_mem_to_zero(heap_pointer,bytes);
     return heap_pointer;
 }
