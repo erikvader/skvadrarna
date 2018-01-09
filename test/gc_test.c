@@ -6,6 +6,74 @@
 
 #define CHUNK_SIZE 2048
 
+/*
+ * Stupid List Thing
+ */
+typedef struct node node_t;
+
+struct node {
+  int elem;
+  node_t *next;
+};
+const char *node_format_string = "i*";
+
+typedef struct list {
+  node_t *head;
+  heap_t *heap;
+} list_t;
+const char *list_format_string = "**";
+
+list_t *list_init(heap_t *heap) {
+  list_t *list = h_alloc_struct(heap,"**");
+  if (list != NULL) {
+    *list = (list_t) { .head = NULL, .heap = heap };   
+  }
+  return list;
+}
+
+bool list_prepend(list_t *list, int e) {
+  node_t *succ = h_alloc_struct(list->heap, "i*");
+
+  if (succ == NULL) {
+    return false;
+  }
+
+  *succ = (node_t) { .elem = e , .next = list->head };
+  list->head = succ;
+  return true;
+}
+
+int list_read(list_t *list, int index) {
+  node_t *curr = list->head;
+
+  for (int i = 0; i < index; ++i) {
+    if (curr == NULL) {
+      return -1;
+    }
+    curr = curr->next;
+  }
+
+  if (curr != NULL) {
+    return curr->elem;
+  }
+  return -1;
+}
+
+void list_remove_every_other(list_t *list) {
+  node_t *curr = list->head;
+
+  while (curr != NULL) {
+    if (curr->next != NULL) {
+      curr->next = curr->next->next;
+      curr = curr->next;
+    }
+  }
+}
+
+/*
+ * end of stupid list thing
+ */
+
 typedef struct test_struct_1 {
   int i;
   char c;
@@ -22,7 +90,6 @@ void gc_test_init_high_address() {
 }
 
 void gc_test_alloc_size() {
-  // CU_ADD_TEST(gcEvent, gc_test_gc_event_1);
   heap_t *heap = h_init(10 * CHUNK_SIZE, true, 1.0);
 
   size_t before = h_used(heap);
@@ -125,7 +192,24 @@ void gc_test_gc_event_stress() {
   h_delete(heap);
 }
 
-/// \TODO: add test with structs that use pointers on other structs
+void gc_test_alloc_list_stress() {
+  size_t heap_size = 16*CHUNK_SIZE;
+  heap_t *heap = h_init(heap_size,true,0.5);
+  list_t *list = list_init(heap);
+
+  int failed = 0;
+  for (int i = 0; i < 32 ; ++i) {
+    for (int q = 0; q < 128; q++) {
+      bool succ = list_prepend(list,128*i + q);
+      if (!succ) {
+        ++failed; 
+      }
+    }
+    list_remove_every_other(list);
+  }
+  CU_ASSERT_TRUE(failed == 0);
+  h_delete(heap);
+}
 
 void add_gc_test_suites() {
   

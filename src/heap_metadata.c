@@ -8,6 +8,7 @@
 #define CHUNK_SIZE 2048
 #define MIN_OBJ_SIZE 16
 #define OBJECT_ALIGNMENT MIN_OBJ_SIZE
+const size_t header_size = 8; // \TODO: fix this so it imports instead
 
 typedef uint8_t bitarr_t;
 
@@ -71,7 +72,7 @@ void *align_pointer(void *pointer) {
 }
 
 // Calculates where the first chunk should start (i.e. where the header should end)
-void* get_chunks_start(heap_t *header_start, size_t total_size) {
+void *get_chunks_start(heap_t *header_start, size_t total_size) {
     void *heap_end = (void *) header_start + total_size;
     total_size -= sizeof(heap_header_t);
     int n_chunks = total_size / CHUNK_SIZE;
@@ -82,7 +83,7 @@ void* get_chunks_start(heap_t *header_start, size_t total_size) {
         chunks_start = (void *) header_start + sizeof(heap_header_t) + sizeof(void *) * n_chunks + alloc_map_size;
         chunks_start = align_pointer(chunks_start);
         n_chunks--;
-    } while (chunks_start + n_chunks * CHUNK_SIZE > heap_end);
+    } while(chunks_start + n_chunks * CHUNK_SIZE > heap_end);
     return chunks_start;
 }
 
@@ -126,12 +127,26 @@ size_t chunk_calc_avail_space(heap_t *heap, chunk_t chunk) {
     return header->chunk_siz - used_space;
 }
 
+bool chunk_can_alloc(heap_t *heap, chunk_t index, size_t obj_siz) {
+    heap_header_t *head = (heap_header_t *) heap;
+    uintptr_t int_pointer = (uintptr_t) head->free_pointers[index];
+    uintptr_t int_pointer_mod = int_pointer;
+
+    int_pointer_mod += header_size;
+    int_pointer_mod += OBJECT_ALIGNMENT - (int_pointer_mod % OBJECT_ALIGNMENT);
+
+    size_t tot_size = obj_siz + (int_pointer_mod - int_pointer);
+    return chunk_calc_avail_space(heap, index) >= tot_size;
+}
+
 void *hm_get_free_space(heap_t *heap, size_t obj_siz) { //TODO: Must work with mutiple objects in same chunk.
     int n_chunks = hm_get_amount_chunks(heap);
     bool banned_chunks[n_chunks];
     memset(banned_chunks, false, n_chunks);
     return hm_alloc_spec_chunk(heap, obj_siz, banned_chunks);
 }
+
+
 
 void *hm_alloc_spec_chunk(heap_t *heap, size_t obj_siz, bool *ban) {
     if(obj_siz == 0) {
@@ -140,20 +155,19 @@ void *hm_alloc_spec_chunk(heap_t *heap, size_t obj_siz, bool *ban) {
     if(obj_siz > CHUNK_SIZE) {
         return NULL;
     }
-    if(obj_siz < MIN_OBJ_SIZE) {
-        obj_siz = MIN_OBJ_SIZE;
-    }
     heap_header_t *head = (heap_header_t *) heap; //So we're able to use header metadata
-    void *free_space = head->chunks_start;
     for(int i = 0; i < hm_get_amount_chunks(heap); i++) {
-        if(chunk_calc_avail_space(heap, i) >= obj_siz && !ban[i]) {
+        if(!ban[i] && chunk_can_alloc(heap, i, obj_siz)) {
+            head->free_pointers[i] += header_size;
+            head->free_pointers[i] = align_pointer(head->free_pointers[i]);
+
             void *allocated = head->free_pointers[i];
             set_addr_allocated(heap, allocated, true);
+
             head->free_pointers[i] += obj_siz;
-            head->free_pointers[i] = align_pointer(head->free_pointers[i]);
+
             return allocated;
         }
-        free_space += head->chunk_siz;
     }
     return NULL;
 }
