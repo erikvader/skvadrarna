@@ -24,7 +24,7 @@ int tree_key_compare(elem_t a, elem_t b){
 database_t* db_new(heap_t *heap){
   database_t *new = h_alloc_struct(heap, "**b");
   new->tree = tree_new(heap, NULL, NULL, delete_item, NULL, tree_key_compare);
-   new->undo = undo_stack_new();
+   new->undo = undo_stack_new(heap);
    new->undo_enabled = true;
    return new;
 }
