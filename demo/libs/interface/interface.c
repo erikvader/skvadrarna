@@ -411,7 +411,7 @@ void event_loop(heap_t *heap){
     bool running = true;
     while(running){
         char input = ask_question_menu();
-        char *trash;
+        // char *trash;
 
         switch(toupper(input)){
             case 'A':
@@ -427,8 +427,9 @@ void event_loop(heap_t *heap){
               edit_items(heap, database);
                 break;
             case 'P':
-              trash = print_items(heap, database);
-                if(trash != NULL) break;
+              print_items(heap, database);
+                // if(trash != NULL)
+              break;
         case 'S':
           save_file(heap, database);
         break;
