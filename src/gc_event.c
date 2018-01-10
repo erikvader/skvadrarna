@@ -72,6 +72,7 @@ void init_variable_sized_array(bool *arr, int arr_size, bool init) {
 }
 
 void gce_run_gc_event_dbg(heap_t *heap, bool unsafe) {
+    fprintf(stderr, "<<<<<<<<<<<<<<<<<<<<<<<<<<<< GC ran!!! before: %d", (int)h_used(heap));//TODO: debug
 
     int num_chunks = hm_get_amount_chunks(heap);
 
@@ -119,6 +120,8 @@ void gce_run_gc_event_dbg(heap_t *heap, bool unsafe) {
     }
 
     hm_toggle_explored_bit(heap);
+
+    fprintf(stderr, ", after: %d\n", (int)h_used(heap)); //TODO: remove!
 
 }
 
