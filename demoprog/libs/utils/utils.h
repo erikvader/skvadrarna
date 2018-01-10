@@ -42,4 +42,5 @@ char* trim(heap_t *heap, char*);
 
 char *h_strdup(heap_t *heap, const char *str);
 answer_t h_strdup_g(char *s);
+void *h_alloc_point_arr(heap_t *heap, int num_pointers);
 #endif

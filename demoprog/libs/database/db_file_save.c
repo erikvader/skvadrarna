@@ -2,6 +2,7 @@
 #include "../list/list_iterator.h"
 #include <string.h>
 #include <stdlib.h>
+#include "../utils/utils.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                 save stuff                                //
@@ -64,7 +65,7 @@ int read_int(blk_file bf){
 }
 
 static
-char* read_string(heap_t *heap, blk_file bf){
+char* read_string2(heap_t *heap, blk_file bf){
    int len = read_int(bf);
    char *str = h_alloc_data(heap, sizeof(char)*len);
    blk_read(bf, str);
@@ -73,7 +74,7 @@ char* read_string(heap_t *heap, blk_file bf){
 
 shelf_t* read_shelf(heap_t *heap, blk_file bf){
   shelf_t *she = h_alloc_struct(heap, "*i");
-   she->name = read_string(heap, bf);
+   she->name = read_string2(heap, bf);
    she->num = read_int(bf);
    return she;
 }
@@ -90,8 +91,8 @@ list_t* read_list(heap_t *heap, blk_file bf){
 
 item_t* read_item(heap_t *heap, blk_file bf){
   item_t * item = h_alloc_struct(heap, "**i*");
-   item->name = read_string(heap, bf);
-   item->desc = read_string(heap, bf);
+   item->name = read_string2(heap, bf);
+   item->desc = read_string2(heap, bf);
    item->price = read_int(bf);
    item->shelves = read_list(heap, bf);
    return item;
@@ -104,15 +105,9 @@ bool db_file_get(heap_t *heap, item_t ***items, int *item_len, const char *filen
    }
 
    *item_len = read_int(bf);
-   
-   char buf[*item_len + 1];
 
-   for (int i = 0; i < *item_len; ++i) {
-     buf[i] = '*';
-   }
+   *items = h_alloc_point_arr(heap, *item_len);
 
-   buf[*item_len] = '\0';
-   *items = h_alloc_struct(heap,buf );
    for(int i = 0; i < *item_len; i++){
      (*items)[i] = read_item(heap, bf);
    }

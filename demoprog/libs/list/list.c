@@ -37,7 +37,7 @@ int default_compare(elem_t elem1, elem_t elem2){
 }
 
 list_t *list_new(heap_t *heap, element_copy_fun copy, element_free_fun free, element_comp_fun compare){
-  list_t *newList = h_alloc_struct(heap, "*i8c8c8c");
+  list_t *newList = h_alloc_struct(heap, "**iddd");
 
     if(newList != NULL){
         newList->first = NULL;

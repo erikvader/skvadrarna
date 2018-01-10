@@ -45,7 +45,7 @@ int default_compare(elem_t a, elem_t b){
 }
 
 tree_t *tree_new(heap_t *heap, element_copy_fun elem_copy, key_copy_fun key_copy, element_free_fun elem_free, key_free_fun key_free, element_comp_fun compare){
-  tree_t *new = h_alloc_struct(heap, "*8c8c8c8c8c");
+  tree_t *new = h_alloc_struct(heap, "*ddddd");
 
    if (new != NULL){
       new->root = NULL;

@@ -19,6 +19,21 @@ answer_t h_strdup_g(char *s){
     return (answer_t) h_strdup(global_heap, s);
 }
 
+void *h_alloc_point_arr(heap_t *heap, int num_pointers){
+    // char temp = h_alloc_data(heap, num_pointers*sizeof(char) + 1);
+    char temp[num_pointers + 1];
+
+    for(int i = 0; i < num_pointers; i++){
+        temp[i] = '*';
+    }
+
+    temp[num_pointers] = '\0';
+
+    void *arr = h_alloc_struct(heap, temp);
+
+    return arr;
+}
+
 void clean_input_buffer(){
    int c;
    do{

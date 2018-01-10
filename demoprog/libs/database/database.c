@@ -308,7 +308,7 @@ enum db_error db_get_shelves(heap_t *heap, const database_t *db, const char *ite
    *amount = list_length(ite->shelves);
    if(*amount == 0) return DB_NO_ERROR;
 
-   *shelves = h_alloc_struct(heap, "här ska det stå något annat");
+   *shelves = h_alloc_point_arr(heap, *amount);
    //*shelves = malloc(sizeof(elem_t) * (*amount));
 
    list_iterator_t *iterator = list_get_iterator(heap, ite->shelves);
