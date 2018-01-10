@@ -447,9 +447,11 @@ void event_loop(heap_t *heap){
 
 
 int main(){
-  heap_t *heap = h_init(4056, true, 0.5);
+  heap_t *heap = h_init(10*2048, true, 0.5);
   global_heap = heap;
   
     event_loop(heap);
+
+    h_delete(heap);
     return 0;
 }
