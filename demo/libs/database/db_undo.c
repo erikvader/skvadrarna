@@ -13,7 +13,7 @@ struct undo_action{
 // completely frees an undo_action_t and everything in it.
 void undo_free_action(undo_action_t *undo_a){
    if(undo_a->changed != NULL) delete_item(item_to_elem_t(undo_a->changed));
-   if(undo_a->changed_name != NULL) free(undo_a->changed_name);
+   // if(undo_a->changed_name != NULL) free(undo_a->changed_name);
 }
 
 undo_stack_t* undo_stack_new(heap_t *heap){
