@@ -5,19 +5,23 @@
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
+#include <stdint.h>
 
 // extracts the last two bits of a pointer
 static
 char get_last_two(void **p) {
-    char last = (unsigned long)(*p) & 0b11;
-    *p = (void *)((unsigned long)(*p) & (~0b11));
+    char last = (uintptr_t)(*p) & 0b11;
+    if (last != '\0') {
+      *p = (void *)((uintptr_t)(*p) & (~0b11));
+    }
     return last;
 }
 
 // restores the last two bits of a previously extracted pointer
 static
 void restore_last_two(void **p, char last) {
-    *p = (void *)((unsigned long)(*p) | last);
+    last = last & 0b11;
+    *p = (void *)((uintptr_t)(*p) | last);
 }
 
 // copy all live objects

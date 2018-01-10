@@ -15,15 +15,17 @@ int main() {
     CU_initialize_registry();
 
     // Add some test suites
+    run_om_test();
+    
     add_si_test_suites();
-    add_gc_test_suites();
     add_hm_test_suites();
     add_gc_event_test_suites();
-
+    add_gc_test_suites();
+    
     CU_basic_run_tests();
     CU_cleanup_registry();
 
-    run_om_test();
+    
 
     return CU_get_error();
 }
