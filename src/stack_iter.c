@@ -6,8 +6,8 @@
 
 extern char **environ;
 extern void **test_bot;
-//#define bot ((uintptr_t) environ)
-#define bot ((uintptr_t) test_bot)
+#define bot ((uintptr_t) environ)
+// #define bot ((uintptr_t) test_bot)
 size_t global_alignment = sizeof(void *);
 
 #define iter_step(mod,siz,dir) \
