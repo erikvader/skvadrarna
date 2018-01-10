@@ -10,10 +10,10 @@
 
 
 heap_t *h_init(size_t bytes, bool unsafe_stack, float gc_threshold) {
-    void *mem_pos;
+    void *mem_pos = NULL;
     posix_memalign(&mem_pos, LARGE_ADDRESS, bytes);
     heap_t *heap = mem_pos;
-    memset(mem_pos, 0, bytes);
+    //memset(mem_pos, 0, bytes);
     //heap_t *heap = calloc(1,bytes);;
     hm_init(heap, bytes, unsafe_stack, gc_threshold);
 
