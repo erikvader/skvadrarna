@@ -33,9 +33,9 @@
 
 ///Reads from (first + offset) 2 bits of header data
 uint8_t read_2_bits_first(const void *object, const int offset) {
-    uint64_t data = *(uint64_t *)(HEADER); // Data is a safe copy of header
+    uintptr_t data = *(uintptr_t *)(HEADER); // Data is a safe copy of header
     data = data >> (62 - offset);// 62 = bitsize of uint64_t - number of bits needed
-    data = data & (uint64_t) 3;// Sets all but last 2 bits of data to 0;
+    data = data & (uintptr_t) 3;// Sets all but last 2 bits of data to 0;
     return data;
 }
 ///Reads from (last - offset) 2 bits of header data
@@ -85,7 +85,7 @@ size_t bit_array64(void *object, const char *format, bool write) {
             ++no_bytes;
             break;
         case 'i':
-        case 'l':
+        
         case 'f':
             contains_4 = true;
             if(no_bytes == 0) {
@@ -100,6 +100,7 @@ size_t bit_array64(void *object, const char *format, bool write) {
             }
 
             break;
+        case 'l':
         case 'd':
             contains_8 = true;
             if(no_bytes == 0) {

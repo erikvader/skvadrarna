@@ -24,7 +24,8 @@ typedef struct list {
 const char *list_format_string = "**";
 
 list_t *list_init(heap_t *heap) {
-  list_t *list = h_alloc_struct(heap,"**");
+  list_t *list = NULL;
+  list = h_alloc_struct(heap,"**");
   if (list != NULL) {
     *list = (list_t) { .head = NULL, .heap = heap };
   }
@@ -32,7 +33,8 @@ list_t *list_init(heap_t *heap) {
 }
 
 bool list_prepend(list_t *list, int e) {
-  node_t *succ = h_alloc_struct(list->heap, "i*");
+  node_t *succ = NULL;
+  succ = h_alloc_struct(list->heap, "i*");
 
   if (succ == NULL) {
     return false;
@@ -99,7 +101,7 @@ char test_struct_1_format_string[4] = { 'i', 'c','*','\0' };
 void gc_test_init_high_address() {
   heap_t *heap = h_init(10 * CHUNK_SIZE, true, 1.0);
 
-  CU_ASSERT_TRUE((uintptr_t) heap >= (0x10000000));
+  CU_ASSERT_TRUE((uintptr_t) heap >= (0x01000000));
 
   h_delete(heap);
 }
@@ -163,8 +165,7 @@ void gc_test_gc_event_1() {
     p = h_alloc_struct(heap,"i");
     *p = i;
   }
-  printf("%lu\n",h_used(heap));
-
+  
   h_gc(heap);
 
   CU_ASSERT_TRUE(h_used(heap) < heap_size/4);
