@@ -9,7 +9,7 @@ dep=$(patsubst %.o,%.d,$(objects))
 flags=-MMD -Wall -g -Wl,--no-as-needed
 bflags=
 tags=GPATH GRTAGS GSYMS GTAGS
-libs=libs/database/database.a libs/list/list.a libs/tree/tree.a libs/file/block_writer.a libs/stack/stack.a
+libs=libs/database/database.a libs/list/list.a libs/tree/tree.a libs/file/block_writer.a libs/stack/stack.a ../out/libskvadrarna.a
 
 .PHONY: all
 all: $(exe)
