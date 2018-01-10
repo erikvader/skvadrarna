@@ -403,7 +403,7 @@ database_t *load_file(heap_t *heap, database_t *database){
 }
 
 void event_loop(heap_t *heap){
-    database_t *database = db_new();
+    database_t *database = db_new(heap);
 
     printf("\n");
     printf("Welcome to the warehouse\n");

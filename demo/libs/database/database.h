@@ -45,7 +45,7 @@ typedef struct database database_t;
 ///
 /// \returns an empty newly created database
 /// \see db_free
-database_t* db_new();
+database_t* db_new(heap_t *heap);
 
 /// frees and deletes the database
 ///
