@@ -81,8 +81,8 @@ void tree_node_delete(tree_t *tree, tree_node *node, bool dk, bool de){
    tree_node_delete(tree, node->left, dk, de);
    tree_node_delete(tree, node->right, dk, de);
 
-   if (dk) tree->key_free(node->key);
-   if (de) tree->ele_free(node->data);
+   // if (dk) tree->key_free(node->key);
+   // if (de) tree->ele_free(node->data);
 
 }
 

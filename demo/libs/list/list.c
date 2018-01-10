@@ -134,7 +134,7 @@ void list_remove(list_t *list, int index, bool delete){
     if(list->last == removed){
         list->last = prev;
     }
-    if(delete) list->elem_free(removed->value);
+    // if(delete) list->elem_free(removed->value);
     list->length--;
 
 }
