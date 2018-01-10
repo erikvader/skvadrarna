@@ -18,6 +18,10 @@ all: $(exe)
 run: all
 	./$(exe)
 
+.PHONY: demo
+demo: all
+	./$(exe) < test-all
+
 .PHONY: test_all
 test_all: compile_libs
 	make -C libs/list test
