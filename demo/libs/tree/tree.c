@@ -2,6 +2,7 @@
 #include "tree.h"
 #include <stdlib.h>
 #include <string.h>
+#include "../utils/utils.h"
 
 enum tree_rotate_dir {ROTATE_LEFT, ROTATE_RIGHT};
 
@@ -320,7 +321,8 @@ void tree_node_elements(tree_node *n, tree_key_t *arr, int *i){
 elem_t* tree_elements(heap_t *heap, tree_t *t){
    int size = tree_size(t);
    if(size == 0) return NULL;
-   elem_t *arr = h_alloc_struct(heap, "*");
+   elem_t *arr = h_alloc_point_arr(heap, size);
+   // elem_t *arr = h_alloc_struct(heap, "*");
    int i = 0;
    tree_node_elements(t->root, arr, &i);
    return arr;
