@@ -17,7 +17,7 @@ export LDFLAGS=-L $(OUTDIR) -lskvadrarna
 export LIBRARYNAME=libskvadrarna.a
 export TESTEXECNAME=skvadrarna_test
 
-.PHONY: all test memtest dirs clean format
+.PHONY: all test memtest dirs clean format demo
 
 all: $(OUTDIR)/$(LIBRARYNAME)
 
@@ -39,6 +39,10 @@ dirs:
 
 clean:
 	rm -rf $(OUTDIR) $(BUILDDIR) $(DEPSDIR)
+	@make -C demo clean
 
 format:
 	find ./src -name *.c | xargs -d'\n' -n1 astyle -n --options=astylerc
+
+demo: all
+	@make -C demo demo
