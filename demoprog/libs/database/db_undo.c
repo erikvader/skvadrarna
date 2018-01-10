@@ -2,6 +2,7 @@
 #include "../stack/stack.h"
 #include "db_undo.h"
 #include <string.h>
+#include "../utils/utils.h"
 
 struct undo_action{
    enum undo_type type; ///< type of action we did
@@ -32,7 +33,7 @@ void undo_stack_add(heap_t *heap, undo_stack_t *undo_s, item_t *added){
    undo_action_t *new = undo_make_action(heap);
    new->type = UNDO_ADD;
    new->changed = NULL;
-   new->changed_name = strdup(added->name);
+   new->changed_name = h_strdup(heap, added->name);
    undo_stack_push(heap, undo_s, new);
 }
 
@@ -48,7 +49,7 @@ void undo_stack_edit(heap_t *heap, undo_stack_t *undo_s, item_t *copy, char *new
    undo_action_t *new = undo_make_action(heap);
    new->type = UNDO_EDIT;
    new->changed = copy_item(heap, copy);
-   new->changed_name = strdup(new_name);
+   new->changed_name = h_strdup(heap, new_name);
    undo_stack_push(heap, undo_s, new);
 }
 

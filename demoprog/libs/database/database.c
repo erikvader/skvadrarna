@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "db_undo.h"
+#include "../utils/utils.h"
 
 struct database{
    tree_t *tree;
@@ -56,7 +57,7 @@ enum db_error db_add_item(heap_t *heap, database_t *db, const char *name, const 
       return DB_ITEM_ALREADY_EXISTS;
    }
 
-   item_t *new = make_item(heap, strdup(name), strdup(description), price);
+   item_t *new = make_item(heap, h_strdup(heap, name), h_strdup(heap, description), price);
    tree_insert(heap, db->tree, key_char_to_elem_t(new->name), item_to_elem_t(new));
 
    if(db->undo_enabled) undo_stack_add(heap, db->undo, new);
@@ -94,7 +95,7 @@ enum db_error db_set_item_desc(heap_t *heap, database_t *db, const char *item, c
       return DB_ITEM_NO_EXIST;
    }
    if(db->undo_enabled) undo_stack_edit(heap, db->undo, ite, ite->name);
-   ite->desc = strdup(new_desc);
+   ite->desc = h_strdup(heap, new_desc);
    return DB_NO_ERROR;
 }
 
@@ -128,7 +129,7 @@ enum db_error db_set_item_name(heap_t *heap, database_t *db, const char *item, c
    item_t *removed = info[1].p;
 
    if(db->undo_enabled) undo_stack_edit(heap, db->undo, info[1].p, (char*) new_name);
-   removed->name = strdup(new_name);
+   removed->name = h_strdup(heap, new_name);
 
    tree_insert(heap, db->tree, key_char_to_elem_t(removed->name), item_to_elem_t(removed));
 
@@ -240,7 +241,7 @@ enum db_error db_put_item_on_shelf(heap_t *heap, database_t *db, const char *ite
          return DB_ITEM_NO_EXIST;
       }else{
         if(db->undo_enabled) undo_stack_edit(heap, db->undo, user, user->name);
-        elem_t new = (elem_t) (void*) make_shelf(heap, strdup(shelf_name), amount);
+        elem_t new = (elem_t) (void*) make_shelf(heap, h_strdup(heap, shelf_name), amount);
          list_append(heap, user->shelves, new);
          return DB_NO_ERROR;
       }
@@ -368,12 +369,12 @@ enum db_error db_undo(heap_t *heap, database_t *db, char **name){
 
    if(type == UNDO_REMOVE){
      tree_insert(heap, db->tree, key_char_to_elem_t(changed->name), item_to_elem_t(changed));
-      *name = strdup(changed->name);
+     *name = h_strdup(heap, changed->name);
       return DB_UNDO_REMOVE;
    }else if(type == UNDO_ADD){
       elem_t info[2];
       tree_remove(db->tree, key_char_to_elem_t(changed_name), info);
-      *name = strdup(changed_name);
+      *name = h_strdup(heap, changed_name);
       delete_item(info[1]);
       return DB_UNDO_ADD;
    }else if(type == UNDO_EDIT){

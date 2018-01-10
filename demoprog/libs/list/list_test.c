@@ -251,7 +251,7 @@ void test_list_get(void)
 }
 
 elem_t list_s_dup(elem_t e){
-   return (elem_t) { .p=strdup(e.p)};
+    return (elem_t) { .p=h_strdup(heap, e.p)};
 }
 
 void list_s_free(elem_t e){

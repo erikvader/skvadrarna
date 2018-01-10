@@ -12,6 +12,8 @@ typedef union{
 typedef bool(*check_func)(char*);
 typedef answer_t(*convert_func)(char*);
 
+heap_t *global_heap;
+
 bool is_number(char *str);
 bool is_float(char *str);
 bool is_str_not_empty(char*);
@@ -37,4 +39,7 @@ char ask_question_char(char*);
 // trims whitespace
 // returns a pointer to a new string string on the heap
 char* trim(heap_t *heap, char*);
+
+char *h_strdup(heap_t *heap, const char *str);
+answer_t h_strdup_g(char *s);
 #endif

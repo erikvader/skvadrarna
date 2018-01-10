@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "../list/list_iterator.h"
 #include <string.h>
+#include "../utils/utils.h"
 
 //frees a shelf
 void delete_shelf(elem_t s){
@@ -41,7 +42,7 @@ elem_t item_to_elem_t(item_t *item){
 }
 
 item_t* copy_item(heap_t *heap, item_t *item){
-  item_t *copy = make_item(heap, strdup(item->name), strdup(item->desc), item->price);
+    item_t *copy = make_item(heap, h_strdup(heap, item->name), h_strdup(heap, item->desc), item->price);
   list_iterator_t *ite = list_get_iterator(heap, item->shelves);
    while(list_iterator_has_next(ite)){
      elem_t shelf_c = (elem_t)(void*)copy_shelf(heap, (*list_iterator_next(ite)).p);
@@ -51,5 +52,5 @@ item_t* copy_item(heap_t *heap, item_t *item){
 }
 
 shelf_t* copy_shelf(heap_t *heap, shelf_t *s){
-  return make_shelf(heap, strdup(s->name), s->num);
+    return make_shelf(heap, h_strdup(heap, s->name), s->num);
 }

@@ -5,6 +5,20 @@
 #include <stdlib.h>
 #include "utils.h"
 
+char *h_strdup(heap_t *heap, const char *str) {
+    int len = strlen(str);
+
+    char *newStr = h_alloc_data(heap,len+1);
+    for (int i = 0; i < len + 1; ++i) {
+        newStr[i] = str[i];
+    }
+    return newStr;
+}
+
+answer_t h_strdup_g(char *s){
+    return (answer_t) h_strdup(global_heap, s);
+}
+
 void clean_input_buffer(){
    int c;
    do{
@@ -92,7 +106,7 @@ int ask_question_int(char *question){
 }
 
 char* ask_question_string(char* question){
-   return ask_question(question, is_str_not_empty, (convert_func) strdup).s;
+   return ask_question(question, is_str_not_empty, (convert_func) h_strdup_g).s;
 }
 
 float ask_question_float(char * question){

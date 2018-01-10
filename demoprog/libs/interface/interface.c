@@ -90,7 +90,7 @@ void ask_name(char **name){
 void ask_shelf(char **shelf, int *amount){
     bool running = true;
     while(running){
-        *shelf = ask_question("Shelf: ", is_shelf, (convert_func) strdup).s;
+        *shelf = ask_question("Shelf: ", is_shelf, (convert_func) h_strdup_g).s;
         if(db_is_valid_shelf_name(*shelf) == false){
             printf("Invalid shelf name.\n");
         }
@@ -115,7 +115,7 @@ void ask_shelf(char **shelf, int *amount){
 void ask_shelf_delta(char **shelf, int *amount){
    bool running = true;
    while(running){
-      *shelf = ask_question("Shelf: ", is_shelf, (convert_func) strdup).s;
+      *shelf = ask_question("Shelf: ", is_shelf, (convert_func) h_strdup_g).s;
       if(db_is_valid_shelf_name(*shelf) == false){
          printf("Invalid shelf name.\n");
       }
@@ -266,7 +266,7 @@ char* print_items(heap_t *heap, database_t *database){
         if(result == -1){
            ret = NULL;
         }else{
-           ret = strdup(item_names[result]);
+            ret = h_strdup(heap, item_names[result]);
            print_product(heap, database, ret);
         }
         return ret;
@@ -448,6 +448,7 @@ void event_loop(heap_t *heap){
 
 int main(){
   heap_t *heap = h_init(4056, true, 0.5);
+  global_heap = heap;
   
     event_loop(heap);
     return 0;
