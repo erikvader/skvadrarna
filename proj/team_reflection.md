@@ -9,7 +9,7 @@
 | Mattias Aronsson Adler | maad9978@student.uu.se | 2017-12-11 - 2018-01-11 |
 | Mattias Walla | mattias.walla@gmail.com | 2017-12-11 - 2018-01-11 |
 # 2 Kvantifiering
-Projektet startade 2017-12-11 och avslutades 2018-01-11. Projektet planerades ha två sprintar, men i slutändan reducerades det till en. Totalt skrevs 1100 rader kod, 75 rader skript kod och 1001 rader tester. Projektet tog 225 timmar och under den tiden gjordes 201 commits, 14 pull requests och 22 Github Issues.
+Projektet startade 2017-12-11 och avslutades 2018-01-11. Projektet planerades ha två sprintar, men i slutändan reducerades det till en. Totalt skrevs 1100 rader kod, 75 rader skript kod och 1001 rader tester. Projektet tog 225 timmar och under den tiden gjordes 202 commits, 14 pull requests och 22 Github Issues.
 
 # 3 Processen
 ## 3.1 Inledning 
@@ -45,7 +45,9 @@ För att hålla koll på hur mycket tid medlemmarna lade ner på olika delar av 
 All uppladdning av kod behövde även gå igenom en pull requests där de fick granskas innan de tilläts att sammanfogas med huvudgrenen. Totalt gjordes 14 PRs av sex olika personer med 26 kommentarer. Användandet av PRs ledde ett flertal gånger till att slarvfel hittades, men även att större felaktigheter fångades och rättas. Det tvingade även medlemmarna att sätta sig in i varandras kod. Teamet har under projektets gång jobba med PRs på ett seriöst sätt, nästan alla har haft bra namn som “fixade att allocarna inte nullades” och “Heapmetadata-optimiseringar” och har även innehållit en bra beskrivning av vad som gjorts. Ett exempel på undantag till detta är pull requesten “Privata memes”.
 # 8 Reflektion
 Vi betygsätter vår process som 3/7, anledningen till det låga betyget är för att vi inte satte oss in så mycket i hur processen fungerade. Vi hade däremot stor hjälp av kanban-brädet vilket inspirerades av processen.
+
 Vi betygsätter vår slutprodukt till 5/7. Produkten innehåller allt från specen förutom en liten lättimplementerad avvikelse, det finns dock några buggar kvar i programmet. Några saker lämnar också rum för förbättring, såsom hur skräpsamling hanteras vid väldigt högt minnestryck.
 
 Vi betygsätter vår kod garanti till 6/7. Vi har genom projektets gång aktivt arbetat med Pull Requests, tester och god kommentering av kod vilket har lett till hög kvalitet av koden.
+
 Vi anser vår största vinst att vara att modulerna när vi slog ihop dem inte gav upphov till stora buggar och vår största förlust är att alla hade olika tentor som alltid gjorde någon otillgängliga.
