@@ -9,7 +9,7 @@
 | Mattias Aronsson Adler | maad9978@student.uu.se | 2017-12-11 - 2018-01-11 |
 | Mattias Walla | mattias.walla@gmail.com | 2017-12-11 - 2018-01-11 |
 # 2 Kvantifiering
-Projektet startade 2017-12-11 och avslutades 2018-01-11. Projektet planerades ha två sprintar, men i slutändan reducerades det till en. Totalt skrevs 1100 rader kod, 75 rader skript kod och 1001 rader tester. Projektet tog 225 timmar och under den tiden gjordes 202 commits, 14 pull requests och 22 Github Issues.
+Projektet startade 2017-12-11 och avslutades 2018-01-11. Projektet planerades ha två sprintar, men i slutändan reducerades det till en. Totalt skrevs 1100 rader kod, 75 rader skript kod och 1031 rader tester. Projektet tog 225 timmar och under den tiden gjordes 206 commits, 14 pull requests och 22 Github Issues.
 
 # 3 Processen
 ## 3.1 Inledning 
