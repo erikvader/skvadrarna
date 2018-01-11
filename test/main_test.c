@@ -5,6 +5,7 @@
 #include "si_test.h"
 #include "gc_test.h"
 #include "hm_test.h"
+#include "om_hm_test.h"
 #include "gc_event_test.h"
 
 void **test_bot;
@@ -19,6 +20,7 @@ int main() {
     
     add_si_test_suites();
     add_hm_test_suites();
+    add_om_hm_test_suites();
     add_gc_event_test_suites();
     add_gc_test_suites();
     
